@@ -180,7 +180,7 @@ def add_ticket():
         year_part = date_parts[0]
         month_part = date_parts[1]
         day_part = date_parts[2]
-        time_part = date_time_parts[1].split(':')[0]
+        time_part = f"{date_time_parts[1].split(':')[0]}:00"
 
         # Formatear la fecha en el formato correcto
         formatted_date = f"{year_part}-{month_part}-{day_part}"
