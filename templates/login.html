@@ -1,0 +1,77 @@
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <style>
+        /* Estilos para el cuerpo */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        /* Estilos para los encabezados */
+        h1 {
+            color: #333;
+        }
+
+        /* Estilos para los mensajes */
+        p {
+            margin-bottom: 10px;
+            color: red;
+        }
+
+        /* Estilos para los formularios */
+        form {
+            margin-top: 20px;
+            max-width: 300px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="submit"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        input[type="submit"] {
+            background-color: #0056b3;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #007bff;
+            transition: .5s ease;
+        }
+    </style>
+</head>
+
+<h1>Ingresa tus credenciales</h1>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<form method="POST" action="{{ url_for('login') }}">
+    {{ form.csrf_token }}
+
+    <label>Email</label>
+    {{ form.email() }}
+
+    <label>Password</label>
+    {{ form.password() }}
+
+    {{ form.submit() }}
+</form>

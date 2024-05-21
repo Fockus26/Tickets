@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tickets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="datetime-local"] {
+            width: 25%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 25%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        button[type="button"],
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #0056b3;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button[type="submit"] {
+            background-color: #28a745;
+        }
+
+        button[type="button"]:hover {
+            background-color: #007bff;
+            transition: ease .5s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #2ec050;
+            transition: ease .5s;
+        }
+
+        .nav {
+            background-color: white;
+            color: #007bff;
+            border: 1px solid #007bff;
+            padding: 8px;
+        }
+
+        .nav:hover {
+            background-color: #007bff;
+            color: white;
+            transition: ease .5s;
+        }
+    </style>
+    <script>
+        function addSeatType() {
+            var seatType = document.getElementById('seat_type').value;
+            var container = document.getElementById('seat_container');
+            var div = document.createElement('div');
+            div.className = seatType;
+
+            if (seatType === 'polygons') {
+                div.innerHTML = `
+                    <h4>Polígono</h4>
+                    <label>Tipo de Seccion:</label>
+                    <input type="text" name="type_selected[]" value="${seatType}" readonly><br>
+                    <label>Nombre del Polígono:</label>
+                    <input type="text" name="polygon_name[]"><br>
+                    <label>Número de Tickets:</label>
+                    <input type="number" name="num_tickets[]"><br>
+                `;
+            } else if (seatType === 'seats') {
+                div.innerHTML = `
+                    <h4>Asiento</h4>
+                    <label>Tipo de Seccion:</label>
+                    <input type="text" name="type_selected[]"" value="${seatType}" readonly><br>
+                    <label>Nombre del Polígono:</label>
+                    <input type="text" name="polygon_name[]"><br>
+                    <input type="hidden" name="num_tickets[]" value="0">
+                    <label>Número de Fila:</label>
+                    <input type="number" name="row_number[]"><br>
+                    <label>Número de Asiento:</label>
+                    <input type="number" name="seat_number[]"><br>
+                `;
+            }
+
+            container.appendChild(div);
+        }
+
+        function toggleAvailableOptions() {
+            var isMultipleTickets = document.getElementById('is_multiple_tickets').checked;
+            var isAllAvailableDiv = document.getElementById('is_all_available_div');
+            isAllAvailableDiv.style.display = isMultipleTickets ? 'block' : 'none';
+        }
+    </script>
+</head>
+<body>
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('home') }}" class="nav">Home</a>
+        <a href="{{ url_for('logout') }}" class="nav">Logout</a>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('add_ticket') }}">
+        <label for="page_name">Nombre de la Página:</label>
+        <input type="text" id="page_name" name="page_name" value="{{ source }}" readonly><br>
+
+        <label for="concert_name">Nombre del Concierto:</label>
+        <input type="text" id="concert_name" name="concert_name" required><br>
+
+        <label for="event_name">Nombre del Evento:</label>
+        <input type="text" id="event_name" name="event_name" required><br>
+
+        <label for="event_date_time">Fecha y Hora del Evento:</label>
+        <input type="datetime-local" style="margin-bottom: 20px;" id="event_date_time" name="event_date_time" required><br>
+
+        <label for="seat_type">Tipo de Asiento:</label>
+        <select id="seat_type" name="seat_type">
+            <option value="seats">seats</option>
+            <option value="polygons">polygons</option>
+        </select>
+        <button type="button" style="margin-left: 20px;" onclick="addSeatType()">Añadir Asiento</button><br><br>
+
+        <div id="seat_container"></div>
+
+        <input type="hidden" id="is_purchase" name="is_purchase" value="false"><br><br>
+
+        <label for="is_multiple_tickets">Permitir Múltiples Tickets:</label>
+        <input type="checkbox" id="is_multiple_tickets" name="is_multiple_tickets" onclick="toggleAvailableOptions()"><br><br>
+
+        <div id="is_all_available_div" style="display: none;">
+            <label for="is_all_available">Todos los Tickets Disponibles:</label>
+            <input type="checkbox" id="is_all_available" name="is_all_available"><br><br>
+        </div>
+
+        <button type="submit">Enviar</button>
+    </form>
+</body>
+</html>

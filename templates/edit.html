@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button[type="submit"],
+        button[type="button"] {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover,
+        button[type="button"]:hover {
+            background-color: #2ec050;
+            transition: .5s ease;
+        }
+
+        .nav {
+            background-color: white;
+            color: #007bff;
+            border: 1px solid #007bff;
+            padding: 8px;
+        }
+
+        .nav:hover {
+            background-color: #007bff;
+            color: white;
+            transition: ease .5s;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('home') }}" class="nav">Home</a>
+        <a href="{{ url_for('logout') }}" class="nav">Logout</a>
+    </div>
+
+    <h1>Editar Ticket</h1>
+    <form method="POST" action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}">
+        <label for="concert_name">Nombre del Concierto:</label>
+        <input type="text" id="concert_name" name="concert_name" value="{{ ticket.concert_name }}"><br>
+
+        <label for="event_name">Nombre del Evento:</label>
+        <input type="text" id="event_name" name="event_name" value="{{ ticket.event_name }}"><br>
+
+        <label for="event_date_time">Fecha y Hora del Evento:</label>
+        <input type="datetime-local" id="event_date_time" name="event_date_time" value="{{ ticket.event_date_time }}"><br>
+
+        <label for="is_purchase">Comprar:</label>
+        <input type="checkbox" id="is_purchase" name="is_purchase" {% if ticket.is_purchase %} checked {% endif %}><br><br>
+
+        <label for="is_multiple_tickets">Permitir Multiples Tickets:</label>
+        <input type="checkbox" id="is_multiple_tickets" name="is_multiple_tickets" {% if ticket.is_multiple_tickets %} checked {% endif %}><br><br>
+
+        <label for="is_all_available">Todos los Tickets Disponibles:</label>
+        <input type="checkbox" id="is_all_available" name="is_all_available" {% if ticket.is_all_available %} checked {% endif %}><br><br>
+
+        <button type="submit">Update</button>
+    </form>
+</body>
+</html>
