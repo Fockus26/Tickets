@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Index</title>
@@ -90,6 +92,14 @@
             transition: ease .5s;
         }
 
+        button#remove {
+            background-color: #dc3545;
+        }
+
+        button#remove:hover {
+            background-color: #c82333;
+        }
+
         #add_tickets_link {
             color: white;
             background-color: #0056b3;
@@ -131,7 +141,7 @@
         }
     </script>
 </head>
-
+<body>
 <a href="{{ url_for('logout') }}" class="nav">Salir Sesion</a>
 
 <h1>Añade, edita o elimina tickets</h1>
@@ -164,6 +174,9 @@
                 <th>Mes del Evento</th>
                 <th>Hora del Evento</th>
                 <th>Datos del Ticket</th>
+                <th>Multiples Secciones</th>
+                <th>Mensaje</th>
+                <th>Intentos</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -178,6 +191,60 @@
                     <td>{{ ticket.event_month }}</td>
                     <td>{{ ticket.event_time }}</td>
                     <td>{{ ticket.tickets_data }}</td>
+                    <td>{{ 'true' if ticket.is_multiple_section else 'false' }}</td>
+                    <td>{{ ticket.message }}</td>
+                    <td>{{ ticket.attempts }}</td>
+                    <td>
+                        <form action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" method="get">
+                            <button type="submit">Editar</button>
+                        </form>
+                        <form action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}" method="post">
+                            <button id="remove" type="submit">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No hay tickets ingresados.</p>
+{% endif %}
+
+<h2>Tickets en Revisión</h2>
+{% if tickets_en_revision %}
+    <table style="background-color: #f5f088;">
+        <!-- Encabezados de la tabla -->
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre de la Página</th>
+                <th>Nombre del Concierto</th>
+                <th>Nombre del Evento</th>
+                <th>Fecha del Evento</th>
+                <th>Mes del Evento</th>
+                <th>Hora del Evento</th>
+                <th>Datos del Ticket</th>
+                <th>Múltiples Secciones</th>
+                <th>Mensaje</th>
+                <th>Intentos</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <!-- Cuerpo de la tabla -->
+        <tbody>
+            {% for ticket in tickets_en_revision %}
+                <tr>
+                    <td>{{ ticket.id }}</td>
+                    <td>{{ ticket.page_name }}</td>
+                    <td>{{ ticket.concert_name }}</td>
+                    <td>{{ ticket.event_name }}</td>
+                    <td>{{ ticket.event_day }}</td>
+                    <td>{{ ticket.event_month }}</td>
+                    <td>{{ ticket.event_time }}</td>
+                    <td>{{ ticket.tickets_data }}</td>
+                    <td>{{ 'true' if ticket.is_multiple_section else 'false' }}</td>
+                    <td>{{ ticket.message }}</td>
+                    <td>{{ ticket.attempts }}</td>
                     <td>
                         <form action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" method="get">
                             <button type="submit">Editar</button>
@@ -191,7 +258,7 @@
         </tbody>
     </table>
 {% else %}
-    <p>No hay tickets ingresados.</p>
+    <p>No hay tickets en revisión.</p>
 {% endif %}
 
 <h2>Tickets Completados</h2>
@@ -207,6 +274,9 @@
                 <th>Mes del Evento</th>
                 <th>Hora del Evento</th>
                 <th>Datos del Ticket</th>
+                <th>Multiples Secciones</th>
+                <th>Mensaje</th>
+                <th>Intentos</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -221,12 +291,15 @@
                     <td>{{ ticket.event_month }}</td>
                     <td>{{ ticket.event_time }}</td>
                     <td>{{ ticket.tickets_data }}</td>
+                    <td>{{ 'true' if ticket.is_multiple_section else 'false' }}</td>
+                    <td>{{ ticket.message }}</td>
+                    <td>{{ ticket.attempts }}</td>
                     <td>
                         <form action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" method="get">
                             <button  type="submit">Editar</button>
                         </form>
                         <form action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}" method="post">
-                            <button type="submit">Eliminar</button>
+                            <button id="remove" type="submit">Eliminar</button>
                         </form>
                     </td>
                 </tr>
@@ -236,3 +309,5 @@
 {% else %}
     <p>No hay tickets completados.</p>
 {% endif %}
+</body>
+</html>

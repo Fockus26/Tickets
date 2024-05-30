@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Tickets</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -96,48 +97,174 @@
             color: white;
             transition: ease .5s;
         }
+
+        .section {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .section h4 {
+            margin: 0 0 10px 0;
+        }
+
+        .section .remove-section,
+        .section .toggle-button {
+            position: relative;
+            top: -10px;
+            left: 0px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .section .toggle-button {
+            left: 0px;
+            background-color: #6c757d;
+        }
+
+        .section .toggle-button:hover {
+            background-color: #5a6268;
+        }
+
+        .section .remove-section:hover {
+            background-color: #c82333;
+        }
+
+        .ticket-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ticket-options input[type="number"],
+        .ticket-options button {
+            width: auto;
+            padding: 5px 10px;
+            margin: 0;
+            flex: 1;
+        }
+
+        .ticket-options button {
+            flex: 1;
+            padding: 5px;
+            margin: 0;
+        }
+
+        .ticket-options button.selected {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .toggle-content {
+            display: none;
+        }
+
+        .ticket-options button.selected {
+            background-color: #007bff;
+            color: white;
+        }
     </style>
     <script>
-        function addSeatType() {
-            var seatType = document.getElementById('seat_type').value;
-            var container = document.getElementById('seat_container');
-            var div = document.createElement('div');
-            div.className = seatType;
+        function addSection() {
+            const container = document.getElementById('section_container');
+            const section = document.createElement('div');
+            section.classList.add('section');
 
-            if (seatType === 'polygons') {
-                div.innerHTML = `
-                    <h4>Polígono</h4>
-                    <label>Tipo de Seccion:</label>
-                    <input type="text" name="type_selected[]" value="${seatType}" readonly><br>
-                    <label>Nombre del Polígono:</label>
-                    <input type="text" name="polygon_name[]"><br>
-                    <label>Número de Tickets:</label>
-                    <input type="number" name="num_tickets[]"><br>
-                `;
-            } else if (seatType === 'seats') {
-                div.innerHTML = `
-                    <h4>Asiento</h4>
-                    <label>Tipo de Seccion:</label>
-                    <input type="text" name="type_selected[]"" value="${seatType}" readonly><br>
-                    <label>Nombre del Polígono:</label>
-                    <input type="text" name="polygon_name[]"><br>
-                    <input type="hidden" name="num_tickets[]" value="0">
-                    <label>Número de Fila:</label>
-                    <input type="number" name="row_number[]"><br>
-                    <label>Número de Asiento:</label>
-                    <input type="number" name="seat_number[]"><br>
-                `;
-            }
+            const sectionId = 'section-' + Date.now();
 
-            container.appendChild(div);
+            section.innerHTML = `
+                <h4 style="margin-top: 20px;">Sección</h4>
+                <button type="button" class="toggle-button" onclick="toggleContent('${sectionId}')"><i class="fa-solid fa-chevron-down"></i></button>
+                <button type="button" class="remove-section" onclick="removeSection(this)">Eliminar</button>
+                <div id="${sectionId}" class="toggle-content">
+                    <label>Nombre de la Sección:</label>
+                    <input type="text" name="section_name[]" required><br>
+
+                    <label>Tipo de Tickets:</label>
+                    <select name="ticket_type[]">
+                        <option value="Normal">Boleto Normal</option>
+                        <option value="Preventa">Preventa</option>
+                        <option value="Citibanamex">Citibanamex</option>
+                        <option value="Fans">Fans</option>
+                    </select><br>
+
+                    <div class="ticket-options">
+                        <button type="button" onclick="selectMaxTickets(this)">Máximos Tickets</button>
+                        <button type="button" onclick="selectMinTickets(this)">Mínimos Tickets</button>
+                        <input type="number" name="num_tickets[]" placeholder="Número de Tickets" oninput="clearButtonSelection(this)" required>
+                        <input type="hidden" name="ticket_limit[]" value="">
+                    </div><br>
+
+                    <div style="display:flex; align-items: center">
+                        <label style="margin: 0px;">Todos los tickets disponibles:</label>
+                        <input style="margin-right: 20px;" type="checkbox" name="is_all_tickets_available[]">
+
+                        <label style="margin: 0px;" for="is_presale">Preventa:</label>
+                        <input type="checkbox" id="is_presale" name="is_presale[]"><br><br>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(section);
         }
 
-        function toggleAvailableOptions() {
-            var isMultipleTickets = document.getElementById('is_multiple_tickets').checked;
-            var isAllAvailableDiv = document.getElementById('is_all_available_div');
-            isAllAvailableDiv.style.display = isMultipleTickets ? 'block' : 'none';
+        function removeSection(button) {
+            button.parentElement.remove();
+        }
+
+        function selectMaxTickets(button) {
+            const input = button.nextElementSibling.nextElementSibling;
+            const hiddenInput = button.nextElementSibling.nextElementSibling.nextElementSibling;
+            if (button.classList.contains('selected')) {
+                button.classList.remove('selected');
+                input.disabled = false;
+                hiddenInput.value = '';
+            } else {
+                clearButtonSelection(button);
+                button.classList.add('selected');
+                input.value = '';
+                input.disabled = true;
+                hiddenInput.value = 'max';
+            }
+        }
+
+        function selectMinTickets(button) {
+            const input = button.nextElementSibling;
+            const hiddenInput = button.nextElementSibling.nextElementSibling;
+            if (button.classList.contains('selected')) {
+                button.classList.remove('selected');
+                input.disabled = false;
+                hiddenInput.value = '';
+            } else {
+                clearButtonSelection(button);
+                button.classList.add('selected');
+                input.value = '';
+                input.disabled = true;
+                hiddenInput.value = 'min';
+            }
+        }
+
+        function clearButtonSelection(element) {
+            const buttons = element.parentElement.querySelectorAll('button');
+            buttons.forEach(button => button.classList.remove('selected'));
+            element.parentElement.querySelector('input[type="number"]').disabled = false;
+            element.parentElement.querySelector('input[type="hidden"]').value = '';
+        }
+
+        function toggleContent(sectionId) {
+            const content = document.getElementById(sectionId);
+            content.style.display = content.style.display === 'none' ? 'block' : 'none';
+            const icon = content.previousElementSibling.querySelector('i');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
         }
     </script>
+    <script src="https://kit.fontawesome.com/99b01781d1.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div style="margin-bottom: 20px;">
@@ -168,26 +295,16 @@
         <label for="event_date_time">Fecha y Hora del Evento:</label>
         <input type="datetime-local" style="margin-bottom: 20px;" id="event_date_time" name="event_date_time" required><br>
 
-        <label for="seat_type">Tipo de Asiento:</label>
-        <select id="seat_type" name="seat_type">
-            <option value="seats">seats</option>
-            <option value="polygons">polygons</option>
-        </select>
-        <button type="button" style="margin-left: 20px;" onclick="addSeatType()">Añadir Asiento</button><br><br>
+        <button type="button" onclick="addSection()">Añadir Sección</button><br><br>
 
-        <div id="seat_container"></div>
+        <div id="section_container"></div>
 
         <input type="hidden" id="is_purchase" name="is_purchase" value="false"><br><br>
 
-        <label for="is_multiple_tickets">Permitir Múltiples Tickets:</label>
-        <input type="checkbox" id="is_multiple_tickets" name="is_multiple_tickets" onclick="toggleAvailableOptions()"><br><br>
+        <label for="is_multiple_section">Permitir Múltiples Secciones:</label>
+        <input type="checkbox" id="is_multiple_section" name="is_multiple_section" onclick="toggleAvailableOptions()"><br><br>
 
-        <div id="is_all_available_div" style="display: none;">
-            <label for="is_all_available">Todos los Tickets Disponibles:</label>
-            <input type="checkbox" id="is_all_available" name="is_all_available"><br><br>
-        </div>
-
-        <button type="submit">Enviar</button>
+        <button type="submit">Añadir Ticket</button>
     </form>
 </body>
 </html>

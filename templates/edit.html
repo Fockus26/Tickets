@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Ticket</title>
     <style>
-        body {
+body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
@@ -83,11 +83,18 @@
         <label for="is_purchase">Comprar:</label>
         <input type="checkbox" id="is_purchase" name="is_purchase" {% if ticket.is_purchase %} checked {% endif %}><br><br>
 
-        <label for="is_multiple_tickets">Permitir Multiples Tickets:</label>
-        <input type="checkbox" id="is_multiple_tickets" name="is_multiple_tickets" {% if ticket.is_multiple_tickets %} checked {% endif %}><br><br>
+        <label for="is_multiple_section">Múltiples Secciones:</label>
+        <input type="checkbox" id="is_multiple_section" name="is_multiple_section" {% if ticket.is_multiple_section %} checked {% endif %}><br><br>
 
-        <label for="is_all_available">Todos los Tickets Disponibles:</label>
-        <input type="checkbox" id="is_all_available" name="is_all_available" {% if ticket.is_all_available %} checked {% endif %}><br><br>
+        <label for="is_all_tickets_available">Todos los Tickets Disponibles:</label>
+        <input type="checkbox" id="is_all_tickets_available" name="is_all_tickets_available" {% if ticket.is_all_tickets_available %} checked {% endif %}><br><br>
+
+        <!-- Agrega aquí los campos adicionales para editar -->
+        <label for="attempts">Intentos:</label>
+        <input type="number" id="attempts" name="attempts" value="{{ ticket.attempts }}"><br>
+
+        <label for="message">Mensaje:</label>
+        <input type="text" id="message" name="message" value="{{ ticket.message }}"><br>
 
         <button type="submit">Update</button>
     </form>

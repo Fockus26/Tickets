@@ -44,9 +44,10 @@ class GetTickets(Resource):
                 'event_day': ticket.event_day,
                 'event_month': ticket.event_month,
                 'event_time': ticket.event_time,
-                'is_multiple_tickets': ticket.is_multiple_tickets,
-                'is_all_available': ticket.is_all_available,
+                'is_multiple_section': ticket.is_multiple_section,
                 'is_purchase': ticket.is_purchase,
+                'attempts': ticket.attempts,
+                'message': ticket.message,
                 'tickets_data': json.loads(ticket.tickets_data)
             }
             tickets_data.append(ticket_info)
@@ -81,19 +82,50 @@ class GetBuyTickets(Resource):
                 'event_day': ticket.event_day,
                 'event_month': ticket.event_month,
                 'event_time': ticket.event_time,
-                'is_multiple_tickets': ticket.is_multiple_tickets,
-                'is_all_available': ticket.is_all_available,
+                'is_multiple_section': ticket.is_multiple_section,
                 'is_purchase': ticket.is_purchase,
+                'attempts': ticket.attempts,
+                'message': ticket.message,
                 'tickets_data': json.loads(ticket.tickets_data)
             }
             tickets_data.append(ticket_info)
         return {'tickets': tickets_data}
 
+class UpdateTicket(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('api_key', type=str, required=True, location='args')
+        self.reqparse.add_argument('id', type=int, required=True, location='args')
+        self.reqparse.add_argument('message', type=str, required=False, location='args')
+        self.reqparse.add_argument('attempts', type=int, required=False, location='args')
+
+    def put(self):
+        args = self.reqparse.parse_args()
+        api_key = args['api_key']
+        ticket_id = args['id']
+        message = args.get('message')
+        attempts = args.get('attempts')
+
+        if api_key != os.getenv('API_KEY'):
+            return {'message': 'Unauthorized access'}, 401
+
+        ticket = Ticket.query.get(ticket_id)
+        if not ticket:
+            return {'message': 'Ticket not found'}, 404
+
+        if message is not None:
+            ticket.message = message
+        if attempts is not None:
+            ticket.attempts = attempts
+
+        db.session.commit()
+
+        return {'message': 'Ticket updated successfully'}
 
 # Crear los recursos de la API
+api.add_resource(UpdateTicket, '/update_ticket')
 api.add_resource(GetTickets, '/get_tickets')
 api.add_resource(GetBuyTickets, '/get_buy_tickets')
-
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -103,9 +135,10 @@ class Ticket(db.Model):
     event_day = db.Column(db.String(10), nullable=False)
     event_month = db.Column(db.String(5), nullable=False)
     event_time = db.Column(db.String(5), nullable=False)
-    is_multiple_tickets = db.Column(db.Boolean, nullable=False)
-    is_all_available = db.Column(db.Boolean, nullable=False)
+    is_multiple_section = db.Column(db.Boolean, nullable=False)
     is_purchase = db.Column(db.Boolean, nullable=False)
+    attempts = db.Column(db.Integer, nullable=False)
+    message = db.Column(db.String(255), nullable=False)
     tickets_data = db.Column(db.Text, nullable=False)
 
 # Para crear la base de datos, ejecuta:
@@ -120,12 +153,14 @@ user_authenticated = False
 def home():
     global user_authenticated
     if user_authenticated:
-        tickets_ingresados = Ticket.query.filter_by(is_purchase=False).all()
+        tickets_ingresados = Ticket.query.filter((Ticket.is_purchase == False) & (Ticket.attempts < 3)).all()
         tickets_completados = Ticket.query.filter_by(is_purchase=True).all()
-        return render_template("index.html", tickets_ingresados=tickets_ingresados, tickets_completados=tickets_completados)
+        tickets_en_revision = Ticket.query.filter_by(attempts=3, is_purchase=False).all()
+        return render_template("index.html", tickets_ingresados=tickets_ingresados, tickets_completados=tickets_completados, tickets_en_revision=tickets_en_revision)
     else:
         flash("No estás autorizado")
         return redirect(url_for("login"))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -163,17 +198,16 @@ def create_ticket(source):
         flash("No estás autorizado")
         return redirect(url_for("login"))
 
-@app.route('/add_ticket', methods=['GET', 'POST'])
+@app.route('/add_ticket', methods=['POST'])
 def add_ticket():
     global user_authenticated
     if user_authenticated:
         concert_name = request.form.get('concert_name')
         event_name = request.form.get('event_name')
         event_date_time = request.form.get('event_date_time')
-        is_purchase = request.form.get('is_purchase') == 'true'
+        is_purchase = request.form.get('is_purchase') == 'on'
         page_name = request.form.get('page_name')
-        is_multiple_tickets = request.form.get('is_multiple_tickets') == 'on'
-        is_all_available = request.form.get('is_all_available') == 'on'
+        is_multiple_section = request.form.get('is_multiple_section') == 'on'
 
         date_time_parts = event_date_time.split('T')
         date_parts = date_time_parts[0].split('-')
@@ -182,54 +216,73 @@ def add_ticket():
         day_part = date_parts[2]
         time_part = f"{date_time_parts[1].split(':')[0]}:00"
 
+        # Diccionario para la traducción de meses
+        month_translation = {
+            'Jan': 'Ene', 'Feb': 'Feb', 'Mar': 'Mar', 'Apr': 'Abr', 'May': 'May', 'Jun': 'Jun',
+            'Jul': 'Jul', 'Aug': 'Ago', 'Sep': 'Sep', 'Oct': 'Oct', 'Nov': 'Nov', 'Dec': 'Dic'
+        }
+
         # Formatear la fecha en el formato correcto
         formatted_date = f"{year_part}-{month_part}-{day_part}"
 
         # Convertir la fecha a un objeto datetime
         date_obj = datetime.datetime.strptime(formatted_date, '%Y-%m-%d')
-        # Obtener el mes abreviado
-        month_part = date_obj.strftime('%b').upper()
+        # Obtener el mes abreviado y traducirlo
+        month_part = month_translation[date_obj.strftime('%b')]
 
-        tickets_data = []
+        sections_data = []
 
-        types_selected = request.form.getlist('type_selected[]')
-        polygon_names = request.form.getlist('polygon_name[]')
+        section_names = request.form.getlist('section_name[]')
+        ticket_types = request.form.getlist('ticket_type[]')
         num_tickets = request.form.getlist('num_tickets[]')
-        row_numbers = request.form.getlist('row_number[]')
-        seat_numbers = request.form.getlist('seat_number[]')
+        ticket_limits = request.form.getlist('ticket_limit[]')
+        is_all_tickets_available = request.form.getlist('is_all_tickets_available[]')
+        presales = request.form.getlist('is_presale[]')
 
-        for i in range(len(types_selected)):
-            if types_selected[i] == 'seats':
-                tickets_data.append(["seats", polygon_names[i], int(row_numbers[i]), int(seat_numbers[i])])
+        for i in range(len(section_names)):
+            num_ticket_value = None
+            if ticket_limits[i] == 'max':
+                num_ticket_value = 'Max'
+            elif ticket_limits[i] == 'min':
+                num_ticket_value = 'Min'
+            else:
+                num_ticket_value = int(num_tickets[i]) if num_tickets[i] else None
 
-        # Process polygons next
-        for i in range(len(types_selected)):
-            if types_selected[i] == 'polygons':
-                tickets_data.append(["polygons", polygon_names[i], int(num_tickets[i])])
+            is_all_tickets_available_value = is_all_tickets_available[i] if i < len(is_all_tickets_available) else False
+            presales_value = presales[i] if i < len(presales) else False
 
+            section_data = {
+                "section_name": section_names[i],
+                "ticket_type": ticket_types[i],
+                "num_tickets": num_ticket_value,
+                "is_all_tickets_available": is_all_tickets_available_value == 'on',
+                "is_presale": presales_value == 'on'
+            }
+            sections_data.append(section_data)
 
-        tickets_data_json = json.dumps(tickets_data, ensure_ascii=False)
+        tickets_data = sections_data
 
         new_ticket = Ticket(
-            page_name=page_name,
             concert_name=concert_name,
             event_name=event_name,
             event_day=day_part,
             event_month=month_part,
             event_time=time_part,
-            is_multiple_tickets=is_multiple_tickets,
-            is_all_available=is_all_available,
             is_purchase=is_purchase,
-            tickets_data=tickets_data_json
+            page_name=page_name,
+            is_multiple_section=is_multiple_section,
+            attempts=0,
+            message="Buscando Ticket",
+            tickets_data=json.dumps(tickets_data)
         )
+
         db.session.add(new_ticket)
         db.session.commit()
-
-        flash("Ticket Añadido")
         return redirect(url_for('home'))
     else:
         flash("No estás autorizado")
         return redirect(url_for("login"))
+
 
 @app.route('/edit_ticket/<int:ticket_id>', methods=['GET', 'POST'])
 def edit_ticket(ticket_id):
@@ -240,10 +293,11 @@ def edit_ticket(ticket_id):
             ticket.concert_name = request.form.get('concert_name')
             ticket.event_name = request.form.get('event_name')
             ticket.event_date_time = request.form.get('event_date_time')
-            ticket.seat_type = request.form.get('seat_type')
             ticket.is_purchase = True if request.form.get('is_purchase') == 'on' else False
-            ticket.is_multiple_tickets = True if request.form.get('is_multiple_tickets') == 'on' else False
-            ticket.is_all_available = True if request.form.get('is_all_available') == 'on' else False
+            ticket.is_multiple_section = True if request.form.get('is_multiple_section') == 'on' else False
+            ticket.is_all_tickets_available = True if request.form.get('is_all_tickets_available') == 'on' else False
+            ticket.attempts = request.form.get('attempts')
+            ticket.message = request.form.get('message')
 
             db.session.commit()
             flash("Ticket Actualizado")
@@ -253,6 +307,7 @@ def edit_ticket(ticket_id):
     else:
         flash("No estás autorizado")
         return redirect(url_for("login"))
+
 
 @app.route('/delete_ticket/<int:ticket_id>', methods=['POST'])
 def delete_ticket(ticket_id):
