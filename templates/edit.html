@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Ticket</title>
     <style>
-body {
+        body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
@@ -80,21 +80,44 @@ body {
         <label for="event_date_time">Fecha y Hora del Evento:</label>
         <input type="datetime-local" id="event_date_time" name="event_date_time" value="{{ ticket.event_date_time }}"><br>
 
-        <label for="is_purchase">Comprar:</label>
-        <input type="checkbox" id="is_purchase" name="is_purchase" {% if ticket.is_purchase %} checked {% endif %}><br><br>
-
         <label for="is_multiple_section">Múltiples Secciones:</label>
         <input type="checkbox" id="is_multiple_section" name="is_multiple_section" {% if ticket.is_multiple_section %} checked {% endif %}><br><br>
 
         <label for="is_all_tickets_available">Todos los Tickets Disponibles:</label>
         <input type="checkbox" id="is_all_tickets_available" name="is_all_tickets_available" {% if ticket.is_all_tickets_available %} checked {% endif %}><br><br>
 
-        <!-- Agrega aquí los campos adicionales para editar -->
-        <label for="attempts">Intentos:</label>
-        <input type="number" id="attempts" name="attempts" value="{{ ticket.attempts }}"><br>
-
         <label for="message">Mensaje:</label>
         <input type="text" id="message" name="message" value="{{ ticket.message }}"><br>
+
+        <h2>Secciones</h2>
+        {% for section in sections %}
+            <fieldset>
+                <legend>Sección {{ loop.index }}</legend>
+                <label for="section_name_{{ loop.index }}">Nombre de la Sección:</label>
+                <input type="text" id="section_name_{{ loop.index }}" name="section_name[]" value="{{ section.section_name }}"><br>
+
+                <label for="ticket_type_{{ loop.index }}">Tipo de Ticket:</label>
+                <input type="text" id="ticket_type_{{ loop.index }}" name="ticket_type[]" value="{{ section.ticket_type }}"><br>
+
+                <label for="num_tickets_{{ loop.index }}">Número de Tickets:</label>
+                <input type="number" id="num_tickets_{{ loop.index }}" name="num_tickets[]" value="{{ section.num_tickets }}"><br>
+
+                <label for="ticket_limit_{{ loop.index }}">Límite de Tickets:</label>
+                <input type="text" id="ticket_limit_{{ loop.index }}" name="ticket_limit[]" value="{{ section.ticket_limit }}"><br>
+
+                <label for="attempts_{{ loop.index }}">Intentos:</label>
+                <input type="number" id="attempts_{{ loop.index }}" name="attempts[]" value="{{ section.attempts }}"><br>
+
+                <label for="section_is_purchase_{{ loop.index }}">Comprar Sección:</label>
+                <input type="checkbox" id="section_is_purchase_{{ loop.index }}" name="section_is_purchase[]" {% if section.is_purchase %} checked {% endif %}><br><br>
+
+                <label for="is_all_tickets_available_{{ loop.index }}">Todos los Tickets Disponibles:</label>
+                <input type="checkbox" id="is_all_tickets_available_{{ loop.index }}" name="is_all_tickets_available[]" {% if section.is_all_tickets_available %} checked {% endif %}><br><br>
+
+                <label for="is_presale_{{ loop.index }}">Preventa:</label>
+                <input type="checkbox" id="is_presale_{{ loop.index }}" name="is_presale[]" {% if section.is_presale %} checked {% endif %}><br><br>
+            </fieldset>
+        {% endfor %}
 
         <button type="submit">Update</button>
     </form>
