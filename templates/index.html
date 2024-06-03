@@ -1,251 +1,126 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Index</title>
+{% extends "base.html" %}
+{% block title %}Administración{% endblock %}
+{% block style %}
     <style>
-        /* Estilos para el cuerpo */
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-
-        /* Estilos para los encabezados */
-        h1, h2 {
-            color: #333;
-        }
-
-        /* Estilos para las tablas */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        /* Estilos para los botones */
-        button {
-            padding: 5px 10px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 3px;
-        }
-
-        /* Estilos para los enlaces */
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        /* Estilos para los mensajes */
-        .message {
-            margin-bottom: 10px;
-            color: green;
-        }
-
-        /* Estilos para los formularios */
-        form {
-            display: inline;
-        }
-
-        .completed-ticket {
-            background-color: #e5f5e1; /* Cambia el color de fondo */
-        }
-
-        select {
-            padding: 8px;
-            font-size: 16px;
-            border: 1px solid #ccc;
+        .flash-messages p {
+            background-color: #d4edda; /* Color de fondo verde */
+            color: #155724; /* Color del texto */
+            padding: 10px;
+            border: 1px solid #c3e6cb; /* Borde */
             border-radius: 4px;
-            background-color: #fff;
-            color: #333;
-        }
-
-        /* Estilo cuando el select está enfocado */
-        select:focus {
-            outline: none;
-            border-color: #007bff; /* Cambia el color del borde cuando está enfocado */
-        }
-
-        td form button {
-            padding: 5px 10px; /* Agregar un poco de relleno en la parte superior e inferior */
-            margin-bottom: 5px; /* Agregar un poco de margen en la parte inferior */
-        }
-
-        button {
-            background-color: #0056b3;
-        }
-
-        button:hover {
-            background-color: #007bff;
-            transition: ease .5s;
-        }
-
-        button#remove {
-            background-color: #dc3545;
-        }
-
-        button#remove:hover {
-            background-color: #c82333;
-        }
-
-        #add_tickets_link {
-            color: white;
-            background-color: #0056b3;
-            padding: 8px;
-            font-size: 16px;
-            border-radius: 4px;
-        }
-
-        #add_tickets_link:hover {
-            color: white;
-            background-color: #007bff;
-            transition: ease .5s;
-        }
-
-        .nav {
-            background-color: white;
-            color: #007bff;
-            border: 1px solid #007bff;
-            padding: 8px;
-        }
-
-        .nav:hover {
-            background-color: #007bff;
-            color: white;
-            transition: ease .5s;
-        }
-
-        th, td {
             text-align: center;
         }
-
     </style>
-    <script>
-        function updateLink() {
-            var select = document.getElementById('ticket_source');
-            var selectedOption = select.options[select.selectedIndex].value;
-            var link = document.getElementById('add_tickets_link');
-            link.href = "/create_ticket/" + selectedOption;
-        }
-    </script>
-</head>
-<body>
-<a href="{{ url_for('logout') }}" class="nav">Salir Sesion</a>
+{% endblock %}
+{% block content %}
+<div class="admin-container">
+    <a href="{{ url_for('logout') }}" class="nav-btn">Cerrar Sesión</a>
 
-<h1>Añade, edita o elimina tickets</h1>
+    <h1>Añade, edita o elimina tickets</h1>
 
-<select id="ticket_source" name="ticket_source" onchange="updateLink()">
-    <option value="ticketmaster">Ticketmaster</option>
-    <option value="superboletos">Superboletos</option>
-</select>
+    <div class="ticket-source-container">
+        <label style="margin-bottom: 5px;" for="ticket_source">Pagina</label>
+        <select style="margin-right: 15px; margin-top: 5px;" id="ticket_source" name="ticket_source" onchange="updateLink()">
+            <option value="ticketmaster">Ticketmaster</option>
+            <option value="superboletos">Superboletos</option>
+        </select>
+        <button><a href="{{ url_for('create_ticket', source='ticketmaster') }}">Añadir tickets</a></button>
+    </div>
 
-<a id="add_tickets_link" href="{{ url_for('create_ticket', source='ticketmaster') }}" style="margin-left: 10px;">Añade tickets</a>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-    {% for message in messages %}
-        <p class="message">{{ message }}</p>
-    {% endfor %}
-{% endif %}
-{% endwith %}
-
-<h2>Tickets Ingresados</h2>
-{% if tickets_ingresados %}
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre de la Página</th>
-                <th>Nombre del Concierto</th>
-                <th>Nombre del Evento</th>
-                <th>Fecha del Evento</th>
-                <th>Mes del Evento</th>
-                <th>Hora del Evento</th>
-                <th>Datos del Ticket</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ticket in tickets_ingresados %}
+    <h2>Tickets Ingresados</h2>
+    {% if tickets_ingresados %}
+        <table class="tickets-table">
+            <thead>
                 <tr>
-                    <td>{{ ticket.id }}</td>
-                    <td>{{ ticket.page_name }}</td>
-                    <td>{{ ticket.concert_name }}</td>
-                    <td>{{ ticket.event_name }}</td>
-                    <td>{{ ticket.event_day }}</td>
-                    <td>{{ ticket.event_month }}</td>
-                    <td>{{ ticket.event_time }}</td>
-                    <td>{{ ticket.tickets_data }}</td>
-                    <td>
-                        <form action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" method="get">
-                            <button type="submit">Editar</button>
-                        </form>
-                        <form action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}" method="post">
-                            <button id="remove" type="submit">Eliminar</button>
-                        </form>
-                    </td>
+                    <th>ID</th>
+                    <th>Nombre de Página</th>
+                    <th>Nombre del Concierto</th>
+                    <th>Nombre del Evento</th>
+                    <th>Fecha del Evento</th>
+                    <th>Mes del Evento</th>
+                    <th>Hora del Evento</th>
+                    <th>Datos del Ticket</th>
+                    <th>Acciones</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>No hay tickets ingresados.</p>
-{% endif %}
+            </thead>
+            <tbody>
+                {% for ticket in tickets_ingresados %}
+                    <tr>
+                        <td>{{ ticket.id }}</td>
+                        <td>{{ ticket.page_name }}</td>
+                        <td>{{ ticket.concert_name }}</td>
+                        <td>{{ ticket.event_name }}</td>
+                        <td>{{ ticket.event_day }}</td>
+                        <td>{{ ticket.event_month }}</td>
+                        <td>{{ ticket.event_time }}</td>
+                        <td>{{ ticket.tickets_data }}</td>
+                        <td>
+                            <form action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" method="get">
+                                <button type="submit" class="edit-btn"><i class="fa-solid fa-pen-to-square"></i></button>
+                            </form>
+                            <form action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}" method="post">
+                                <button type="submit" class="delete-btn"><i class="fa-solid fa-x"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay tickets ingresados.</p>
+    {% endif %}
 
-
-<h2>Tickets Completados</h2>
-{% if tickets_completados %}
-    <table class="completed-ticket">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre de la Página</th>
-                <th>Nombre del Concierto</th>
-                <th>Nombre del Evento</th>
-                <th>Fecha del Evento</th>
-                <th>Mes del Evento</th>
-                <th>Hora del Evento</th>
-                <th>Datos del Ticket</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ticket in tickets_completados %}
+    <h2>Tickets Completados</h2>
+    {% if tickets_completados %}
+        <table class="tickets-table1">
+            <thead>
                 <tr>
-                    <td>{{ ticket.id }}</td>
-                    <td>{{ ticket.page_name }}</td>
-                    <td>{{ ticket.concert_name }}</td>
-                    <td>{{ ticket.event_name }}</td>
-                    <td>{{ ticket.event_day }}</td>
-                    <td>{{ ticket.event_month }}</td>
-                    <td>{{ ticket.event_time }}</td>
-                    <td>{{ ticket.tickets_data }}</td>
-                    <td>
-                        <form action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" method="get">
-                            <button  type="submit">Editar</button>
-                        </form>
-                        <form action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}" method="post">
-                            <button id="remove" type="submit">Eliminar</button>
-                        </form>
-                    </td>
+                    <th>ID</th>
+                    <th>Nombre de la Página</th>
+                    <th>Nombre del Concierto</th>
+                    <th>Nombre del Evento</th>
+                    <th>Fecha del Evento</th>
+                    <th>Mes del Evento</th>
+                    <th>Hora del Evento</th>
+                    <th>Datos del Ticket</th>
+                    <th>Acciones</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>No hay tickets completados.</p>
-{% endif %}
-</body>
-</html>
+            </thead>
+            <tbody>
+                {% for ticket in tickets_completados %}
+                    <tr>
+                        <td>{{ ticket.id }}</td>
+                        <td>{{ ticket.page_name }}</td>
+                        <td>{{ ticket.concert_name }}</td>
+                        <td>{{ ticket.event_name }}</td>
+                        <td>{{ ticket.event_day }}</td>
+                        <td>{{ ticket.event_month }}</td>
+                        <td>{{ ticket.event_time }}</td>
+                        <td>{{ ticket.tickets_data }}</td>
+                        <td>
+                            <form action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" method="get">
+                                <button type="submit" class="edit-btn"><i class="fa-solid fa-pen-to-square"></i></button>
+                            </form>
+                            <form action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}" method="post">
+                                <button type="submit" class="delete-btn"><i class="fa-solid fa-x"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay tickets completados.</p>
+    {% endif %}
+</div>
+{% endblock %}

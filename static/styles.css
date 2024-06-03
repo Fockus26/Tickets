@@ -1,0 +1,335 @@
+/* styles.css */
+
+/* Estilo general del cuerpo */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+a {
+    text-decoration: none;
+    color: white;
+}
+
+/* Estilo del contenedor de login */
+.login-container {
+    padding: 20px;
+    max-width: 400px;
+    margin: 50px auto;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.login-container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+/* Estilo para los mensajes flash */
+.flash-messages {
+    margin-bottom: 20px;
+}
+
+.flash-messages p {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Estilo del formulario de login */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group .form-control {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-group .btn {
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.form-group .btn:hover {
+    background-color: #555;
+}
+
+/* Contenedor principal de la página de administración */
+.admin-container {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 50px auto;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Estilo de los botones de navegación */
+.nav-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    background-color: #333;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav-btn:hover {
+    background-color: #555;
+}
+
+/* Estilo de las fuentes de tickets */
+.ticket-source-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ticket-source-container label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+/* Estilos para el select */
+select {
+    padding: 8px 12px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    width: 200px;
+    color: white;
+    background-color: #222;
+}
+
+/* Estilos para los botones */
+button {
+    background-color: #444; /* Gris oscuro */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+    margin-bottom: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #333; /* Gris más oscuro */
+}
+
+.delete-btn {
+    background-color: #800000; /* Borgoña oscuro */
+}
+
+.delete-btn:hover {
+    background-color: #660000; /* Borgoña más oscuro */
+}
+
+/* Estilo de las tablas de tickets */
+.tickets-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.tickets-table th, .tickets-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.tickets-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.tickets-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.tickets-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.tickets-table1 th {
+    background-color: #d4edda; /* Color de fondo verde */
+    color: #155724; /* Color del texto */
+    font-weight: bold;
+}
+
+.tickets-table1 {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.tickets-table1 th, .tickets-table1 td {
+    border: 1px solid #c3e6cb;
+    padding: 8px;
+    text-align: left;
+}
+
+.tickets-table1 tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.tickets-table1 tr:hover {
+    background-color: #f1f1f1;
+}
+
+
+/* Estilos para la navegación */
+.navigation {
+    margin-bottom: 20px;
+}
+
+.nav {
+    display: inline-flex;
+    margin-right: 10px;
+    padding: 10px 20px;
+    color: #fff;
+    background-color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav:hover {
+    background-color: #555;
+}
+
+
+/* Estilos para el formulario de tickets */
+.ticket-form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="datetime-local"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.group {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* Estilos para el botón de añadir sección */
+.add-section-btn {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.add-section-btn:hover {
+    background-color: #555;
+}
+
+/* Estilos para el contenedor de secciones */
+.section-container {
+    margin-bottom: 20px;
+}
+
+/* Estilos para el botón de enviar */
+.submit-btn {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.submit-btn:hover {
+    background-color: #555;
+}
+
+/* Estilos para los checkbox */
+input[type="checkbox"] {
+    -webkit-appearance: none; /* Eliminar la apariencia predeterminada del navegador */
+    -moz-appearance: none;
+    appearance: none;
+    width: 20px; /* Tamaño del checkbox */
+    height: 20px;
+    background-color: #fff; /* Color de fondo */
+    border: 2px solid #555; /* Borde del checkbox */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cursor al pasar sobre el checkbox */
+    vertical-align: middle; /* Alinear verticalmente con el texto */
+    margin-right: 5px; /* Margen a la derecha */
+}
+
+/* Estilo del checkbox cuando está marcado */
+input[type="checkbox"]:checked {
+    background-color: #555; /* Cambiar color de fondo cuando está marcado */
+}
+
+/* Estilo del indicador dentro del checkbox cuando está marcado */
+input[type="checkbox"]:checked::before {
+    content: "\2713"; /* Símbolo de marca de verificación Unicode */
+    font-size: 14px; /* Tamaño de la marca de verificación */
+    color: #fff; /* Color del símbolo */
+    text-align: center; /* Alinear al centro */
+    line-height: 20px; /* Alinear verticalmente */
+}

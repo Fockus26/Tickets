@@ -15,6 +15,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URL')
 db = SQLAlchemy(app)
 api = Api(app)
 
+@app.context_processor
+def inject_datetime():
+    return {'datetime': datetime}
+
 class GetTickets(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -98,7 +102,6 @@ class UpdateTicket(Resource):
         self.reqparse.add_argument('id', type=int, required=True, location='args')
         self.reqparse.add_argument('id_section', type=int, required=True, location='args')
         self.reqparse.add_argument('message', type=str, required=False, location='args')
-        self.reqparse.add_argument('attempts', type=int, required=False, location='args')
 
     def put(self):
         args = self.reqparse.parse_args()
@@ -106,7 +109,6 @@ class UpdateTicket(Resource):
         ticket_id = args['id']
         section_id = args['id_section']
         message = args.get('message')
-        attempts = args.get('attempts')
 
         if api_key != os.getenv('API_KEY'):
             return {'message': 'Unauthorized access'}, 401
@@ -120,7 +122,6 @@ class UpdateTicket(Resource):
         section_found = False
         for section in tickets_data:
             if section.get('section_id') == section_id:
-                section['attempts'] = attempts
                 section['message'] = message
                 section_found = True
                 break
@@ -214,7 +215,7 @@ def logout():
 def create_ticket(source):
     global user_authenticated
     if user_authenticated:
-        return render_template("tickets.html", source=source)
+        return render_template("add_ticket.html", source=source)
     else:
         flash("No estás autorizado")
         return redirect(url_for("login"))
@@ -260,13 +261,8 @@ def add_ticket():
         is_purchases = request.form.getlist('is_purchase[]')
 
         for i in range(len(section_names)):
-            num_ticket_value = None
-            if ticket_limits[i] == 'max':
-                num_ticket_value = 'Max'
-            elif ticket_limits[i] == 'min':
-                num_ticket_value = 'Min'
-            else:
-                num_ticket_value = int(num_tickets[i]) if num_tickets[i] else None
+
+            num_ticket_value = int(num_tickets[i]) if num_tickets[i] else None
 
             is_all_tickets_available_value = is_all_tickets_available[i] if i < len(is_all_tickets_available) else False
             presales_value = presales[i] if i < len(presales) else False
@@ -283,7 +279,6 @@ def add_ticket():
                 "num_tickets": num_ticket_value,
                 "is_all_tickets_available": is_all_tickets_available_value == 'on',
                 "is_presale": presales_value == 'on',
-                'attempts': 0,
                 'message': "Buscando Ticket",
                 "is_purchase": is_purchase_value
             }
@@ -326,27 +321,19 @@ def edit_ticket(ticket_id):
             ticket_types = request.form.getlist('ticket_type[]')
             num_tickets = request.form.getlist('num_tickets[]')
             ticket_limits = request.form.getlist('ticket_limit[]')
-            attempts = request.form.getlist('attempts[]')
             is_all_tickets_available = request.form.getlist('is_all_tickets_available[]')
             presales = request.form.getlist('is_presale[]')
             is_purchase = request.form.getlist('section_is_purchase[]')
-            attempts = request.form.getlist('attempts[]')
             message = request.form.getlist('message[]')
 
             for i in range(len(section_names)):
                 num_ticket_value = None
-                if ticket_limits[i] == 'max':
-                    num_ticket_value = 'Max'
-                elif ticket_limits[i] == 'min':
-                    num_ticket_value = 'Min'
-                else:
-                    num_ticket_value = int(num_tickets[i]) if num_tickets[i] else None
+                num_ticket_value = int(num_tickets[i]) if num_tickets[i] else None
 
                 is_all_tickets_available_value = is_all_tickets_available[i] if i < len(is_all_tickets_available) else False
                 presales_value = presales[i] if i < len(presales) else False
                 is_purchase_value = is_purchase[i] if i < len(is_purchase) else False
 
-                attempt_value = attempts[i]
                 message_value = message[i]
 
                 section_data = {
@@ -355,7 +342,6 @@ def edit_ticket(ticket_id):
                     "num_tickets": num_ticket_value,
                     "is_all_tickets_available": is_all_tickets_available_value == 'on',
                     "is_presale": presales_value == 'on',
-                    "attempts": attempt_value,
                     "message": message_value,
                     "is_purchase": is_purchase_value == 'on'
                 }
@@ -368,7 +354,7 @@ def edit_ticket(ticket_id):
             return redirect(url_for('home'))
         else:
             sections = json.loads(ticket.tickets_data)
-            return render_template('edit.html', ticket=ticket, sections=sections)
+            return render_template('edit_ticket.html', ticket=ticket, sections=sections)
     else:
         flash("No estás autorizado")
         return redirect(url_for("login"))

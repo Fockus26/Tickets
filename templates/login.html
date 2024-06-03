@@ -1,77 +1,35 @@
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <style>
-        /* Estilos para el cuerpo */
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
+{% extends "base.html" %}
+{% block title %}Iniciar Sesión{% endblock %}
+{% block content %}
+<div class="login-container">
+    <h1>Ingresa tus credenciales</h1>
 
-        /* Estilos para los encabezados */
-        h1 {
-            color: #333;
-        }
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
-        /* Estilos para los mensajes */
-        p {
-            margin-bottom: 10px;
-            color: red;
-        }
+    <form method="POST" action="{{ url_for('login') }}">
+        {{ form.csrf_token }}
 
-        /* Estilos para los formularios */
-        form {
-            margin-top: 20px;
-            max-width: 300px;
-        }
+        <div class="form-group">
+            <label for="email">Email</label>
+            {{ form.email(id="email", class="form-control") }}
+        </div>
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
+        <div class="form-group">
+            <label for="password">Password</label>
+            {{ form.password(id="password", class="form-control") }}
+        </div>
 
-        input[type="text"],
-        input[type="password"],
-        input[type="submit"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-
-        input[type="submit"] {
-            background-color: #0056b3;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #007bff;
-            transition: .5s ease;
-        }
-    </style>
-</head>
-
-<h1>Ingresa tus credenciales</h1>
-
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-
-<form method="POST" action="{{ url_for('login') }}">
-    {{ form.csrf_token }}
-
-    <label>Email</label>
-    {{ form.email() }}
-
-    <label>Password</label>
-    {{ form.password() }}
-
-    {{ form.submit() }}
-</form>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}
