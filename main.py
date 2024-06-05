@@ -234,7 +234,7 @@ def add_ticket():
         year_part = date_parts[0]
         month_part = date_parts[1]
         day_part = date_parts[2]
-        time_part = f"{date_time_parts[1].split(':')[0]}:00"
+        time_part = f"{date_time_parts[1]}"
 
         # Diccionario para la traducción de meses
         month_translation = {
