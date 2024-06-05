@@ -255,7 +255,6 @@ def add_ticket():
         section_names = request.form.getlist('section_name[]')
         ticket_types = request.form.getlist('ticket_type[]')
         num_tickets = request.form.getlist('num_tickets[]')
-        ticket_limits = request.form.getlist('ticket_limit[]')
         is_all_tickets_available = request.form.getlist('is_all_tickets_available[]')
         presales = request.form.getlist('is_presale[]')
         is_purchases = request.form.getlist('is_purchase[]')
@@ -290,7 +289,7 @@ def add_ticket():
             concert_name=concert_name,
             event_name=event_name,
             event_day=day_part,
-            event_month=month_part,
+            event_month=month_part.upper(),
             event_time=time_part,
             page_name=page_name,
             tickets_data=json.dumps(tickets_data)
@@ -320,7 +319,6 @@ def edit_ticket(ticket_id):
             section_names = request.form.getlist('section_name[]')
             ticket_types = request.form.getlist('ticket_type[]')
             num_tickets = request.form.getlist('num_tickets[]')
-            ticket_limits = request.form.getlist('ticket_limit[]')
             is_all_tickets_available = request.form.getlist('is_all_tickets_available[]')
             presales = request.form.getlist('is_presale[]')
             is_purchase = request.form.getlist('section_is_purchase[]')
