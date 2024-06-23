@@ -18,14 +18,19 @@
 
     <h1>Añade, edita o elimina tickets</h1>
 
-    <div class="ticket-source-container">
-        <label style="margin-bottom: 5px;" for="ticket_source">Pagina</label>
+    <!-- Formulario de selección de página y botón Filtrar -->
+    <form action="/" method="POST" class="ticket-source-container">
+        <label style="margin-bottom: 5px;" for="ticket_source">Página</label>
         <select style="margin-right: 15px; margin-top: 5px;" id="ticket_source" name="ticket_source" onchange="updateLink()">
+            <option value=''>Todos</option>
             <option value="ticketmaster">Ticketmaster</option>
             <option value="superboletos">Superboletos</option>
         </select>
-        <button><a href="{{ url_for('create_ticket', source='ticketmaster') }}">Añadir tickets</a></button>
-    </div>
+        <button type="submit" class="filter-btn">Filtrar</button>
+        <button>
+            <a id="add-ticket-link" href="{{ url_for('create_ticket', source='ticketmaster') }}">Añadir tickets</a>
+        </button>
+    </form>
 
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -37,6 +42,7 @@
         {% endif %}
     {% endwith %}
 
+    <!-- Tabla de Tickets Ingresados -->
     <h2>Tickets Ingresados</h2>
     {% if tickets_ingresados %}
         <table class="tickets-table">
@@ -80,6 +86,7 @@
         <p>No hay tickets ingresados.</p>
     {% endif %}
 
+    <!-- Tabla de Tickets Completados -->
     <h2>Tickets Completados</h2>
     {% if tickets_completados %}
         <table class="tickets-table1">

@@ -145,7 +145,7 @@ class Ticket(db.Model):
     page_name = db.Column(db.String(100), nullable=False)
     concert_name = db.Column(db.String(100), nullable=False)
     event_name = db.Column(db.String(100), nullable=False)
-    event_day = db.Column(db.String(10), nullable=False)
+    event_day = db.Column(db.JSON(10), nullable=False)
     event_month = db.Column(db.String(5), nullable=False)
     event_time = db.Column(db.String(5), nullable=False)
     tickets_data = db.Column(db.Text, nullable=False)
@@ -165,7 +165,11 @@ def home():
         tickets_ingresados = []
         tickets_completados = []
 
+        # Obtener todos los tickets
         all_tickets = Ticket.query.all()
+
+        # Obtener el valor seleccionado del formulario si se envió
+        selected_source = request.form.get('ticket_source')
 
         for ticket in all_tickets:
             sections = json.loads(ticket.tickets_data)
@@ -173,6 +177,11 @@ def home():
                 tickets_completados.append(ticket)
             else:
                 tickets_ingresados.append(ticket)
+
+        # Filtrar los tickets según el page_name seleccionado si existe
+        if selected_source:
+            tickets_ingresados = [ticket for ticket in tickets_ingresados if ticket.page_name == selected_source]
+            tickets_completados = [ticket for ticket in tickets_completados if ticket.page_name == selected_source]
 
         return render_template(
             "index.html",
@@ -220,35 +229,53 @@ def create_ticket(source):
         flash("No estás autorizado")
         return redirect(url_for("login"))
 
-@app.route('/add_ticket', methods=['POST'])
-def add_ticket():
+@app.route('/add_ticket/<source>', methods=['POST'])
+def add_ticket(source):
     global user_authenticated
     if user_authenticated:
         concert_name = request.form.get('concert_name')
         event_name = request.form.get('event_name')
-        event_date_time = request.form.get('event_date_time')
         page_name = request.form.get('page_name')
+        if source == "ticketmaster":
+            event_date_time = request.form.get('event_date_time')
+            date_time_parts = event_date_time.split('T')
+            date_parts = date_time_parts[0].split('-')
+            year_part = date_parts[0]
+            month_part = date_parts[1]
+            day_part = date_parts[2]
+            time_part = f"{date_time_parts[1]}"
 
-        date_time_parts = event_date_time.split('T')
-        date_parts = date_time_parts[0].split('-')
-        year_part = date_parts[0]
-        month_part = date_parts[1]
-        day_part = date_parts[2]
-        time_part = f"{date_time_parts[1]}"
+            # Diccionario para la traducción de meses
+            month_translation = {
+                'Jan': 'Ene', 'Feb': 'Feb', 'Mar': 'Mar', 'Apr': 'Abr', 'May': 'May', 'Jun': 'Jun',
+                'Jul': 'Jul', 'Aug': 'Ago', 'Sep': 'Sep', 'Oct': 'Oct', 'Nov': 'Nov', 'Dec': 'Dic'
+            }
 
-        # Diccionario para la traducción de meses
-        month_translation = {
-            'Jan': 'Ene', 'Feb': 'Feb', 'Mar': 'Mar', 'Apr': 'Abr', 'May': 'May', 'Jun': 'Jun',
-            'Jul': 'Jul', 'Aug': 'Ago', 'Sep': 'Sep', 'Oct': 'Oct', 'Nov': 'Nov', 'Dec': 'Dic'
-        }
+            # Formatear la fecha en el formato correcto
+            formatted_date = f"{year_part}-{month_part}-{day_part}"
 
-        # Formatear la fecha en el formato correcto
-        formatted_date = f"{year_part}-{month_part}-{day_part}"
+            # Convertir la fecha a un objeto datetime
+            date_obj = datetime.datetime.strptime(formatted_date, '%Y-%m-%d')
+            # Obtener el mes abreviado y traducirlo
+            month_part = month_translation[date_obj.strftime('%b')]
+        else:
+            event_date_time = request.form.get('event_date_range')
+            date_time_parts = event_date_time.split(' to ')
+            start_datetime = datetime.datetime.strptime(date_time_parts[0], '%Y-%m-%d %H:%M')
+            end_datetime = datetime.datetime.strptime(date_time_parts[1], '%Y-%m-%d %H:%M')
+            if start_datetime == end_datetime:
+                day_part = [start_datetime.day]
+            else:
+                day_part = [start_datetime.day, end_datetime.day]
+            # Diccionario para la traducción de meses al español completo
+            month_translation_full = {
+                'Jan': 'Enero', 'Feb': 'Febrero', 'Mar': 'Marzo', 'Apr': 'Abril', 'May': 'Mayo', 'Jun': 'Junio',
+                'Jul': 'Julio', 'Aug': 'Agosto', 'Sep': 'Septiembre', 'Oct': 'Octubre', 'Nov': 'Noviembre', 'Dec': 'Diciembre'
+            }
 
-        # Convertir la fecha a un objeto datetime
-        date_obj = datetime.datetime.strptime(formatted_date, '%Y-%m-%d')
-        # Obtener el mes abreviado y traducirlo
-        month_part = month_translation[date_obj.strftime('%b')]
+            month_part = month_translation_full[start_datetime.strftime('%b')]
+
+            time_part = start_datetime.strftime('%H:%M')
 
         sections_data = []
 
@@ -258,6 +285,10 @@ def add_ticket():
         is_all_tickets_available = request.form.getlist('is_all_tickets_available[]')
         presales = request.form.getlist('is_presale[]')
         is_purchases = request.form.getlist('is_purchase[]')
+
+        if source == "superboletos":
+            event_dates_times = request.form.getlist('event_date_time[]')
+
 
         for i in range(len(section_names)):
 
@@ -270,30 +301,64 @@ def add_ticket():
             # Obtener el ID de la sección
             section_id = i + 1
 
-            # Crear los datos de la sección
-            section_data = {
-                "section_id": section_id,
-                "section_name": section_names[i],
-                "ticket_type": ticket_types[i],
-                "num_tickets": num_ticket_value,
-                "is_all_tickets_available": is_all_tickets_available_value == 'on',
-                "is_presale": presales_value == 'on',
-                'message': "Buscando Ticket",
-                "is_purchase": is_purchase_value
-            }
+            if source == "superboletos":
+                event_date_time2 = event_dates_times[i]
+                date_time_parts2 = event_date_time2.split('T')
+                date_parts2 = date_time_parts2[0].split('-')
+                month_part2 = date_parts2[1]
+                day_part2 = date_parts2[2]
+                time_part2 = f"{date_time_parts2[1]}"
+
+                # Crear los datos de la sección
+                section_data = {
+                    "section_id": section_id,
+                    "section_name": section_names[i],
+                    "ticket_type": ticket_types[i],
+                    "num_tickets": num_ticket_value,
+                    "is_all_tickets_available": is_all_tickets_available_value == 'on',
+                    "is_presale": presales_value == 'on',
+                    'message': "Buscando Ticket",
+                    'ticket_day': day_part2,
+                    'ticket_month': month_part,
+                    'ticket_time': time_part2,
+                    "is_purchase": is_purchase_value
+                }
+            else:
+                # Crear los datos de la sección
+                section_data = {
+                    "section_id": section_id,
+                    "section_name": section_names[i],
+                    "ticket_type": ticket_types[i],
+                    "num_tickets": num_ticket_value,
+                    "is_all_tickets_available": is_all_tickets_available_value == 'on',
+                    "is_presale": presales_value == 'on',
+                    'message': "Buscando Ticket",
+                    "is_purchase": is_purchase_value
+                }
             sections_data.append(section_data)
 
         tickets_data = sections_data
 
-        new_ticket = Ticket(
-            concert_name=concert_name,
-            event_name=event_name,
-            event_day=day_part,
-            event_month=month_part.upper(),
-            event_time=time_part,
-            page_name=page_name,
-            tickets_data=json.dumps(tickets_data)
-        )
+        if source == "superboletos":
+            new_ticket = Ticket(
+                concert_name=concert_name,
+                event_name=event_name,
+                event_day=day_part,
+                event_month=month_part,
+                event_time=time_part,
+                page_name=page_name,
+                tickets_data=json.dumps(tickets_data)
+            )
+        else:
+            new_ticket = Ticket(
+                concert_name=concert_name,
+                event_name=event_name,
+                event_day=day_part,
+                event_month=month_part.upper(),
+                event_time=time_part,
+                page_name=page_name,
+                tickets_data=json.dumps(tickets_data)
+            )
 
         db.session.add(new_ticket)
         db.session.commit()
