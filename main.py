@@ -141,11 +141,11 @@ db = SQLAlchemy(app)
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     page_name = db.Column(db.String(100), nullable=False)
-    concert_name = db.Column(db.String(100), nullable=False)
-    event_name = db.Column(db.String(100), nullable=False)
-    event_day = db.Column(db.JSON(10), nullable=False)
-    event_month = db.Column(db.String(5), nullable=False)
-    event_time = db.Column(db.String(5), nullable=False)
+    concert_name = db.Column(db.String(150), nullable=False)
+    event_name = db.Column(db.String(150), nullable=False)
+    event_day = db.Column(db.JSON(15), nullable=False)
+    event_month = db.Column(db.String(15), nullable=False)
+    event_time = db.Column(db.String(15), nullable=False)
     tickets_data = db.Column(db.Text, nullable=False)
 
 
@@ -195,58 +195,51 @@ def add_ticket(source):
     concert_name = request.form.get('concert_name')
     event_name = request.form.get('event_name')
     page_name = request.form.get('page_name')
-    event_date_time = request.form.get('event_date_time')
-    date_time_parts = event_date_time.split('T')
-    date_parts = date_time_parts[0].split('-')
-    year_part, month_part, day_part = date_parts[0], date_parts[1], date_parts[2]
-    time_part = f"{date_time_parts[1]}"
-
     if source == "ticketmaster":
+        event_date_time = request.form.get('event_date_time')
+        date_time_parts = event_date_time.split('T')
+        date_parts = date_time_parts[0].split('-')
+        year_part, month_part, day_part = date_parts[0], date_parts[1], date_parts[2]
+        time_part = f"{date_time_parts[1]}"
+
         # Diccionario para la traducción de meses
         month_translation = {
             'Jan': 'Ene', 'Feb': 'Feb', 'Mar': 'Mar', 'Apr': 'Abr', 'May': 'May', 'Jun': 'Jun',
             'Jul': 'Jul', 'Aug': 'Ago', 'Sep': 'Sep', 'Oct': 'Oct', 'Nov': 'Nov', 'Dec': 'Dic'
         }
+
+        # Formatear la fecha en el formato correcto
+        formatted_date = f"{year_part}-{month_part}-{day_part}"
+
+        # Convertir la fecha a un objeto datetime
+        date_obj = datetime.datetime.strptime(formatted_date, '%Y-%m-%d')
+        # Obtener el mes abreviado y traducirlo
+        month_part = month_translation[date_obj.strftime('%b')]
     else:
+        event_date_time = request.form.get('event_date_range')
+        date_time_parts = event_date_time.split(' to ')
+        start_datetime = datetime.datetime.strptime(date_time_parts[0], '%Y-%m-%d %H:%M')
+        end_datetime = datetime.datetime.strptime(date_time_parts[1], '%Y-%m-%d %H:%M')
+        if start_datetime == end_datetime:
+            day_part = [start_datetime.day]
+        else:
+            day_part = [start_datetime.day, end_datetime.day]
         # Diccionario para la traducción de meses al español completo
-        month_translation = {
+        month_translation_full = {
             'Jan': 'Enero', 'Feb': 'Febrero', 'Mar': 'Marzo', 'Apr': 'Abril', 'May': 'Mayo', 'Jun': 'Junio',
             'Jul': 'Julio', 'Aug': 'Agosto', 'Sep': 'Septiembre', 'Oct': 'Octubre', 'Nov': 'Noviembre', 'Dec': 'Diciembre'
         }
-        event_date_time2 = request.form.get('event_date_time2')
-        date_time_parts2 = event_date_time2.split('T')
-        date_parts2 = date_time_parts2[0].split('-')
-        year_part2, month_part2, day_part2 = date_parts2[0], date_parts2[1], date_parts2[2]
-        time_part2 = f"{date_time_parts2[1]}"
-
-        formatted_date2 = f"{year_part2}-{month_part2}-{day_part2}"
-
-        # Convertir la fecha a un objeto datetime
-        date_obj = datetime.datetime.strptime(formatted_date2, '%Y-%m-%d')
-        # Obtener el mes abreviado y traducirlo
-        month_part2 = month_translation[date_obj.strftime('%b')]
-
         event_dates_time_tickets = request.form.getlist('event_date_time_tickets[]')
 
-    # Formatear la fecha en el formato correcto
-    formatted_date = f"{year_part}-{month_part}-{day_part}"
+        month_part = month_translation_full[start_datetime.strftime('%b')]
 
-    # Convertir la fecha a un objeto datetime
-    date_obj = datetime.datetime.strptime(formatted_date, '%Y-%m-%d')
-    # Obtener el mes abreviado y traducirlo
-    month_part = month_translation[date_obj.strftime('%b')]
+        time_part = start_datetime.strftime('%H:%M')
 
     tickets_data = []
 
-    print(day_part, day_part2)
-
-    if day_part2 == day_part:
-        day_part = [int(day_part)]
-    else:
-        day_part = [int(day_part), int(day_part2)]
-
     section_names = request.form.getlist('section_name[]')
     num_tickets = request.form.getlist('num_tickets[]')
+
 
     for i in range(len(section_names)):
 

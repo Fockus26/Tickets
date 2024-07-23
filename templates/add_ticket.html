@@ -17,41 +17,63 @@
     {% endwith %}
 
     <h1>Añadir Ticket</h1>
+    {% if source == "ticketmaster" %}
+        <form method="POST" action="{{ url_for('add_ticket', source=source) }}" class="ticket-form">
+            <div class="form-group">
+                <label for="page_name">Nombre de la Página:</label>
+                <input type="text" id="page_name" name="page_name" value="{{ source }}" readonly>
+            </div>
 
-    <form method="POST" action="{{ url_for('add_ticket', source=source) }}" class="ticket-form">
-        <div class="form-group">
-            <label for="page_name">Nombre de la Página:</label>
-            <input type="text" id="page_name" name="page_name" value="{{ source }}" readonly>
-        </div>
+            <div class="form-group">
+                <label for="concert_name">Nombre del Concierto:</label>
+                <input type="text" id="concert_name" name="concert_name" required>
+            </div>
 
-        <div class="form-group">
-            <label for="concert_name">Nombre del Concierto:</label>
-            <input type="text" id="concert_name" name="concert_name" required>
-        </div>
+            <div class="form-group">
+                <label for="event_name">Nombre del Evento:</label>
+                <input type="text" id="event_name" name="event_name" required>
+            </div>
 
-        <div class="form-group">
-            <label for="event_name">Nombre del Evento:</label>
-            <input type="text" id="event_name" name="event_name" required>
-        </div>
+            <div class="form-group">
+                {% if source == "ticketmaster" %}
+                <label for="event_date_time">Fecha y Hora del Evento:</label>
+                <input type="datetime-local" id="event_date_time" name="event_date_time" required>
+                {% else %}
+                <label for="event_date_range">Fecha y Hora del Evento:</label>
+                <input type="text" id="event_date_range" name="event_date_range" required>
+                {% endif %}
+            </div>]
 
-        <div class="form-group">
-            <label for="event_date_time">Fecha y Hora del Evento:</label>
-            <input type="datetime-local" id="event_date_time" name="event_date_time" required>
-        </div>
+            <button type="button" onclick="addSection('{{source}}')" class="add-section-btn">Añadir Sección</button>
 
-        {% if source == "superboletos" %}
-        <div class="form-group">
-            <label for="event_date_time2">Fecha y Hora del Evento:</label>
-            <input type="datetime-local" id="event_date_time2" name="event_date_time2" required>
-        </div>
-        {% endif %}
-        
-        <button type="button" onclick="addSection('{{source}}')" class="add-section-btn">Añadir Sección</button>
+            <div id="section_container" class="section-container"></div>
 
-        <div id="section_container" class="section-container"></div>
+            <button type="submit" class="submit-btn">Añadir Ticket</button>
+        </form>
+    {% else %}
+        <form method="POST" action="{{ url_for('add_ticket', source=source) }}" class="ticket-form">
+            <div class="form-group">
+                <label for="page_name">Nombre de la Página:</label>
+                <input type="text" id="page_name" name="page_name" value="{{ source }}" readonly>
+            </div>
 
-        <button type="submit" class="submit-btn">Añadir Ticket</button>
-    </form>
+            <div class="form-group">
+                <label for="concert_name">Nombre del Concierto:</label>
+                <input type="text" id="concert_name" name="concert_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="event_name">Nombre del Evento:</label>
+                <input type="text" id="event_name" name="event_name" required>
+            </div>
+
+            <button type="button" onclick="addSection()" class="add-section-btn">Añadir Sección</button>
+
+            <div id="section_container" class="section-container"></div>
+
+            <button type="submit" class="submit-btn">Añadir Ticket</button>
+        </form>
+    {% endif %}
 
     <script>
         // Inicializar Flatpickr con el modo de rango
