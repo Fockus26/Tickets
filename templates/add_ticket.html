@@ -4,7 +4,6 @@
 <div class="admin-container">
     <div class="navigation">
         <a href="{{ url_for('home') }}" class="nav">Home</a>
-        <a href="{{ url_for('logout') }}" class="nav">Logout</a>
     </div>
 
     {% with messages = get_flashed_messages() %}
@@ -40,7 +39,7 @@
                 <input type="datetime-local" id="event_date_time" name="event_date_time" required>
             </div>
 
-            <button type="button" onclick="addSection()" class="add-section-btn">Añadir Sección</button>
+            <button type="button" onclick="addSection('{{source}}')" class="add-section-btn">Añadir Sección</button>
 
             <div id="section_container" class="section-container"></div>
 

@@ -26,27 +26,13 @@ function addSection(source) {
 
             <div class="separate">
                 <label>Tipo de Ticket</label>
-                <select name="ticket_type[]">
-                    <option value="Normal">Boleto Normal</option>
-                    <option value="Preventa">Preventa</option>
-                    <option value="Citibanamex">Citibanamex</option>
-                    <option value="Fans">Fans</option>
-                </select><br>
             </dim>
 
             <div class="ticket-options">
-                <input class="group" type="number" name="num_tickets[]" placeholder="Número de Tickets" oninput="clearButtonSelection(this)" required>
+                <input class="group" type="number" name="num_tickets[]" placeholder="Número de Tickets" required>
                 <input type="hidden" name="ticket_limit[]" value="">
             </div><br>
 
-            <div style="display:flex; align-items: center">
-                <label style="margin: 0px;">Todos los tickets disponibles:</label>
-                <input style="margin-right: 20px;" type="checkbox" name="is_all_tickets_available[]">
-
-                <label style="margin: 0px;" for="is_presale">Preventa:</label>
-                <input type="checkbox" id="is_presale" name="is_presale[]"><br><br>
-            </div>
-            <input type="hidden" name="is_purchase[]" value="false">
         </div>
     `;
     } else {
@@ -61,32 +47,18 @@ function addSection(source) {
 
             <div class="separate">
                 <label>Tipo de Ticket</label>
-                <select name="ticket_type[]">
-                    <option value="Normal">Boleto Normal</option>
-                    <option value="Preventa">Preventa</option>
-                    <option value="Citibanamex">Citibanamex</option>
-                    <option value="Fans">Fans</option>
-                </select><br>
             </dim>
 
             <div class="ticket-options">
-                <input class="group" type="number" name="num_tickets[]" placeholder="Número de Tickets" oninput="clearButtonSelection(this)" required>
+                <input class="group" type="number" name="num_tickets[]" placeholder="Número de Tickets" required>
                 <input type="hidden" name="ticket_limit[]" value="">
             </div><br>
 
             <div class="form-group">
                 <label for="event_date_time2">Fecha y Hora del Evento:</label>
-                <input type="datetime-local" id="event_date_time2" name="event_date_time[]" required>
+                <input type="datetime-local" id="event_date_time2" name="event_date_time_tickets[]" required>
             </div>
 
-            <div style="display:flex; align-items: center">
-                <label style="margin: 0px;">Todos los tickets disponibles:</label>
-                <input style="margin-right: 20px;" type="checkbox" name="is_all_tickets_available[]">
-
-                <label style="margin: 0px;" for="is_presale">Preventa:</label>
-                <input type="checkbox" id="is_presale" name="is_presale[]"><br><br>
-            </div>
-            <input type="hidden" name="is_purchase[]" value="false">
         </div>
     `;
     }
@@ -97,45 +69,6 @@ function addSection(source) {
 
 function removeSection(button) {
     button.parentElement.remove();
-}
-
-function selectMaxTickets(button) {
-    const input = button.nextElementSibling.nextElementSibling;
-    const hiddenInput = button.nextElementSibling.nextElementSibling.nextElementSibling;
-    if (button.classList.contains('selected')) {
-        button.classList.remove('selected');
-        input.disabled = false;
-        hiddenInput.value = '';
-    } else {
-        clearButtonSelection(button);
-        button.classList.add('selected');
-        input.value = '';
-        input.disabled = true;
-        hiddenInput.value = 'max';
-    }
-}
-
-function selectMinTickets(button) {
-    const input = button.nextElementSibling;
-    const hiddenInput = button.nextElementSibling.nextElementSibling;
-    if (button.classList.contains('selected')) {
-        button.classList.remove('selected');
-        input.disabled = false;
-        hiddenInput.value = '';
-    } else {
-        clearButtonSelection(button);
-        button.classList.add('selected');
-        input.value = '';
-        input.disabled = true;
-        hiddenInput.value = 'min';
-    }
-}
-
-function clearButtonSelection(element) {
-    const buttons = element.parentElement.querySelectorAll('button');
-    buttons.forEach(button => button.classList.remove('selected'));
-    element.parentElement.querySelector('input[type="number"]').disabled = false;
-    element.parentElement.querySelector('input[type="hidden"]').value = '';
 }
 
 function toggleContent(sectionId) {
