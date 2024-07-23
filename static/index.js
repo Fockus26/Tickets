@@ -24,10 +24,6 @@ function addSection(source) {
             <label>Nombre de la Sección:</label>
             <input class="group" style="margin-bottom: 10px;" type="text" name="section_name[]" required><br>
 
-            <div class="separate">
-                <label>Tipo de Ticket</label>
-            </dim>
-
             <div class="ticket-options">
                 <input class="group" type="number" name="num_tickets[]" placeholder="Número de Tickets" required>
                 <input type="hidden" name="ticket_limit[]" value="">
@@ -44,10 +40,6 @@ function addSection(source) {
         <div id="section-${ticketId}" class="toggle-content" style="display: none; padding: 10px;"> <!-- Agregar padding al contenido -->
             <label>Nombre de la Sección:</label>
             <input class="group" style="margin-bottom: 10px;" type="text" name="section_name[]" required><br>
-
-            <div class="separate">
-                <label>Tipo de Ticket</label>
-            </dim>
 
             <div class="ticket-options">
                 <input class="group" type="number" name="num_tickets[]" placeholder="Número de Tickets" required>
