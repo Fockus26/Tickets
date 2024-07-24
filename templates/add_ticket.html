@@ -34,17 +34,9 @@
             <input type="text" id="event_name" name="event_name" required>
         </div>
 
-        
         <div class="form-group">
-            {% if source == "ticketmaster" %}
-            <label for="event_date_time">Fecha y Hora del Evento:</label>
-            <input type="datetime-local" id="event_date_time" name="event_date_time" required>
-            {% endif %}
-
-            {% if source == "superboletos" %}
             <label for="event_date_range">Fecha y Hora del Evento:</label>
             <input type="text" id="event_date_range" name="event_date_range" required>
-            {% endif %}
         </div>
 
         <button type="button" onclick="addSection('{{source}}')" class="add-section-btn">Añadir Sección</button>
