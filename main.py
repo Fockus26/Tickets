@@ -197,14 +197,21 @@ def add_ticket(source):
     page_name = request.form.get('page_name')
 
     event_date_time = request.form.get('event_date_range')
-    date_time_parts = event_date_time.split(' to ')
-    start_datetime = datetime.datetime.strptime(date_time_parts[0], '%Y-%m-%d %H:%M')
-    end_datetime = datetime.datetime.strptime(date_time_parts[1], '%Y-%m-%d %H:%M')
+    if "to" in event_date_time:
+        print("Hay to")
+        date_time_parts = event_date_time.split(' to ')
+        start_datetime = datetime.datetime.strptime(date_time_parts[0], '%Y-%m-%d %H:%M')
+        end_datetime = datetime.datetime.strptime(date_time_parts[1], '%Y-%m-%d %H:%M')
 
-    if start_datetime == end_datetime:
-        day_part = [start_datetime.day]
+        if start_datetime == end_datetime:
+            day_part = [start_datetime.day]
+        else:
+            day_part = [start_datetime.day, end_datetime.day]
     else:
-        day_part = [start_datetime.day, end_datetime.day]
+        print("No hay to")
+        start_datetime = datetime.datetime.strptime(event_date_time, '%Y-%m-%d %H:%M')
+        day_part = [start_datetime.day]
+
 
     if source == "ticketmaster":
         month_translation = {
@@ -222,7 +229,7 @@ def add_ticket(source):
     month_part = month_translation[start_datetime.strftime('%b')]
 
     time_part = start_datetime.strftime('%H:%M')
-
+    
     tickets_data = []
 
     section_names = request.form.getlist('section_name[]')
@@ -235,6 +242,8 @@ def add_ticket(source):
 
         # Obtener el ID de la sección
         section_id = i + 1
+        is_accurate_search_value = request.form.get(f'is_accurate_search_{section_id}')
+
 
         if source == "superboletos":
             event_date_time_ticket = event_dates_time_tickets[i]
@@ -259,7 +268,8 @@ def add_ticket(source):
                 "section_id": section_id,
                 "section_name": section_names[i],
                 "num_tickets": num_ticket_value,
-                "is_purchase": False
+                "is_purchase": False,
+                "is_accurate_search": is_accurate_search_value == "true"
             }
         tickets_data.append(section_data)
 

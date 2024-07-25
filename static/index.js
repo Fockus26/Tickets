@@ -24,13 +24,15 @@ function addSection(source) {
             <label>Nombre de la Sección:</label>
             <input class="group" style="margin-bottom: 10px;" type="text" name="section_name[]" required><br>
 
-            <div class="separate"></dim>
+            <div class="separate"></div>
 
             <div class="ticket-options">
                 <input class="group" type="number" name="num_tickets[]" placeholder="Número de Tickets" required>
-                <input type="hidden" name="ticket_limit[]" value="">
             </div><br>
 
+           <label style="margin: 0px;">Busqueda Precisa</label>
+            <input type="radio" name="is_accurate_search_${ticketId}" value="true" required> Sí
+            <input type="radio" name="is_accurate_search_${ticketId}" value="false" required> No
         </div>
     `;
     } else {
@@ -43,11 +45,10 @@ function addSection(source) {
             <label>Nombre de la Sección:</label>
             <input class="group" style="margin-bottom: 10px;" type="text" name="section_name[]" required><br>
 
-            <div class="separate"></dim>
+            <div class="separate"></div>
             
             <div class="ticket-options">
                 <input class="group" type="number" name="num_tickets[]" placeholder="Número de Tickets" required>
-                <input type="hidden" name="ticket_limit[]" value="">
             </div><br>
 
             <div class="form-group">
