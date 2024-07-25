@@ -68,9 +68,6 @@
                         <td>{{ ticket.event_month }}</td>
                         <td>{{ ticket.event_time }}</td>
                         <td>
-                            <form action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" method="get">
-                                <button type="submit" class="edit-btn"><i class="fa-solid fa-pen-to-square"></i></button>
-                            </form>
                             <form action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}" method="post">
                                 <button type="submit" class="delete-btn"><i class="fa-solid fa-x"></i></button>
                             </form>
@@ -110,9 +107,6 @@
                         <td>{{ ticket.event_month }}</td>
                         <td>{{ ticket.event_time }}</td>
                         <td>
-                            <form action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" method="get">
-                                <button type="submit" class="edit-btn"><i class="fa-solid fa-pen-to-square"></i></button>
-                            </form>
                             <form action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}" method="post">
                                 <button type="submit" class="delete-btn"><i class="fa-solid fa-x"></i></button>
                             </form>
