@@ -308,9 +308,11 @@ def edit_ticket(ticket_id):
             is_purchase_value = is_purchase[i] if i < len(is_purchase) else False
 
             section_data = {
+                "section_id": i + 1,
                 "section_name": section_names[i],
                 "num_tickets": num_ticket_value,
-                "is_purchase": is_purchase_value == 'on'
+                "is_purchase": is_purchase_value == 'on',
+                "is_accurated_search": ticket.tickets_data[i].is_accurated_search
             }
             sections_data.append(section_data)
 
