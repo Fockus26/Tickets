@@ -312,7 +312,7 @@ def edit_ticket(ticket_id):
                 "section_name": section_names[i],
                 "num_tickets": num_ticket_value,
                 "is_purchase": is_purchase_value == 'on',
-                "is_accurated_search": ticket.tickets_data[i].is_accurated_search
+                "is_accurate_search": ticket.tickets_data[i].is_accurate_search
             }
             sections_data.append(section_data)
 
