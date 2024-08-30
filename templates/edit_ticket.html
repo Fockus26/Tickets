@@ -7,7 +7,7 @@
         </div>
 
         <h1>Editar Ticket</h1>
-        <form method="POST" action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}">
+        <form method="POST" action="{{ url_for('edit_ticket', ticket_id=ticket_id, event_id=event_id, api_key=api_key) }}">
             <div class="form-group">
                 <label for="concert_name">Evento</label>
                 <input type="text" id="concert_name" name="concert_name" value="{{ ticket.concert_name }}" class="form-control">

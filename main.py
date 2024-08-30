@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import json
 import datetime
+import unicodedata
 
 load_dotenv()
 
@@ -13,6 +14,13 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_KEY')
 
 # INTERNAL API
 api = Api(app)
+
+
+# Función para remover acentos
+def remove_accents(input_str):
+    # Normaliza la cadena y filtra los caracteres diacríticos
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 
 class GetTickets(Resource):
@@ -57,52 +65,44 @@ class GetBuyTickets(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('api_key', type=str, required=True, location='args')
-        self.reqparse.add_argument('filter', type=str, required=False, location='args')
+        self.reqparse.add_argument('page', type=str, required=True, location='args')
+        self.reqparse.add_argument('id_event', type=int, required=True, location='args')
+        self.reqparse.add_argument('id_ticket', type=int, required=True, location='args')
 
     def get(self):
         args = self.reqparse.parse_args()
         api_key = args['api_key']
-        filter_value = args['filter']
+        filter_page = args['page'].lower()
+        event_id = args['id_event']
+        ticket_id = args['id_ticket']
 
         if api_key != os.getenv('API_KEY'):
             return {'message': 'Unauthorized access'}, 401
 
-        if filter_value:
-            tickets = Ticket.query.filter_by(page_name=filter_value).all()
-        else:
-            tickets = Ticket.query.all()
+        tickets = Ticket.query.filter_by(page_name=filter_page).all()
 
-        tickets_data = []
         for ticket in tickets:
-            sections = json.loads(ticket.tickets_data)
-            filtered_sections = [section for section in sections if section.get("is_purchase", False)]
-            if filtered_sections:
-                ticket_info = {
-                    'id': ticket.id,
-                    'page_name': ticket.page_name,
-                    'concert_name': ticket.concert_name,
-                    'event_name': ticket.event_name,
-                    'event_day': ticket.event_day,
-                    'event_month': ticket.event_month,
-                    'event_time': ticket.event_time,
-                    'tickets_data': filtered_sections
-                }
-                tickets_data.append(ticket_info)
-        return {'tickets': tickets_data}
+            if ticket.id == event_id:
+                for data in json.loads(ticket.tickets_data):
+                    if ticket_id == data.get('section_id'):
+                        if data.get("is_purchase"):
+                            return True
+                        else:
+                            return False
 
 
 class UpdateTicket(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('api_key', type=str, required=True, location='args')
-        self.reqparse.add_argument('id', type=int, required=True, location='args')
-        self.reqparse.add_argument('id_section', type=int, required=True, location='args')
+        self.reqparse.add_argument('id_event', type=int, required=True, location='args')
+        self.reqparse.add_argument('id_ticket', type=int, required=True, location='args')
 
-    def put(self):
+    def get(self):
         args = self.reqparse.parse_args()
         api_key = args['api_key']
-        ticket_id = args['id']
-        section_id = args['id_section']
+        ticket_id = args['id_event']
+        section_id = args['id_ticket']
 
         if api_key != os.getenv('API_KEY'):
             return {'message': 'Unauthorized access'}, 401
@@ -116,6 +116,7 @@ class UpdateTicket(Resource):
         section_found = False
         for section in tickets_data:
             if section.get('section_id') == section_id:
+                section['is_purchase'] = True
                 section_found = True
                 break
 
@@ -194,6 +195,10 @@ def create_ticket(source):
 def add_ticket(source):
     concert_name = request.form.get('concert_name')
     event_name = request.form.get('event_name')
+
+    concert_name = remove_accents(concert_name)
+    event_name = remove_accents(event_name)
+
     page_name = request.form.get('page_name')
 
     event_date_time = request.form.get('event_date_range')
@@ -287,6 +292,9 @@ def add_ticket(source):
     db.session.commit()
     return redirect(url_for('home'))
 
+@app.route('/update/<int:ticket_id>/<int:event_id>/<api_key>', methods=['GET', 'POST'])
+def update(ticket_id, event_id, api_key):
+    return render_template('update.html', event_id=event_id, ticket_id=ticket_id, api_key=api_key)
 
 @app.route('/edit_ticket/<int:ticket_id>', methods=['GET', 'POST'])
 def edit_ticket(ticket_id):
