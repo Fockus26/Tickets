@@ -116,7 +116,11 @@ class UpdateTicket(Resource):
         section_found = False
         for section in tickets_data:
             if section.get('section_id') == section_id:
-                section['is_purchase'] = True
+                print(section["is_purchase"])
+                if section["is_purchase"]:
+                    section['is_purchase'] = False
+                else:
+                    section['is_purchase'] = True
                 section_found = True
                 break
 
