@@ -141,6 +141,7 @@ api.add_resource(UpdateTicket, '/update_ticket')
 # DATABASE
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URL')
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 class Ticket(db.Model):
