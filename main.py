@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api, Resource, reqparse
 import os
@@ -21,7 +21,6 @@ def remove_accents(input_str):
     # Normaliza la cadena y filtra los caracteres diacríticos
     nfkd_form = unicodedata.normalize('NFKD', input_str)
     return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
-
 
 class GetTickets(Resource):
     def __init__(self):
@@ -60,7 +59,6 @@ class GetTickets(Resource):
                 tickets_data.append(ticket_info)
         return {'tickets': tickets_data}
 
-
 class GetBuyTickets(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -85,54 +83,48 @@ class GetBuyTickets(Resource):
             if ticket.id == event_id:
                 for data in json.loads(ticket.tickets_data):
                     if ticket_id == data.get('section_id'):
-                        if data.get("is_purchase"):
-                            return True
-                        else:
-                            return False
-
+                        return data
 
 class UpdateTicket(Resource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('api_key', type=str, required=True, location='args')
-        self.reqparse.add_argument('id_event', type=int, required=True, location='args')
-        self.reqparse.add_argument('id_ticket', type=int, required=True, location='args')
+    def post(self):
+        # Obtener los parámetros de la URL
+        api_key = request.args.get('api_key')
+        ticket_id = request.args.get('id_ticket', type=int)
+        event_id = request.args.get('id_event', type=int)
 
-    def get(self):
-        args = self.reqparse.parse_args()
-        api_key = args['api_key']
-        ticket_id = args['id_event']
-        section_id = args['id_ticket']
+        # Obtener el código de verificación enviado en el formulario
+        verification_code = request.form.get('verification')
 
+        # Verificar API Key
         if api_key != os.getenv('API_KEY'):
-            return {'message': 'Unauthorized access'}, 401
+            return jsonify({"message": "Unauthorized access"}), 401
 
+        # Buscar ticket en la base de datos
         ticket = Ticket.query.get(ticket_id)
         if not ticket:
-            return {'message': 'Ticket not found'}, 404
+            return jsonify({"message": "Ticket not found"}), 404
 
-        # Buscar la sección por section_id en los datos del ticket
+        # Actualizar datos del ticket
         tickets_data = json.loads(ticket.tickets_data)
         section_found = False
+
+        print('tickets', ticket.tickets_data)
+
         for section in tickets_data:
-            if section.get('section_id') == section_id:
-                print(section["is_purchase"])
-                if section["is_purchase"]:
-                    section['is_purchase'] = False
-                else:
-                    section['is_purchase'] = True
+            if section.get('section_id') == event_id:
+                if verification_code:
+                    section['verification_code'] = verification_code
+                section['is_purchase'] = True
                 section_found = True
                 break
 
         if not section_found:
-            return {'message': 'Section not found in ticket'}, 404
+            return jsonify({"message": "Section not found in ticket"}), 404
 
-        # Actualizar los datos del ticket
         ticket.tickets_data = json.dumps(tickets_data)
-
         db.session.commit()
 
-        return {'message': 'Ticket updated successfully'}
+        return jsonify({"message": "Ticket updated successfully"})
 
 api.add_resource(GetTickets, '/get_tickets')
 api.add_resource(GetBuyTickets, '/get_buy_tickets')
@@ -153,7 +145,6 @@ class Ticket(db.Model):
     event_month = db.Column(db.String(15), nullable=False)
     event_time = db.Column(db.String(15), nullable=False)
     tickets_data = db.Column(db.Text, nullable=False)
-
 
 with app.app_context():
     db.create_all()
@@ -270,7 +261,8 @@ def add_ticket(source):
                 'ticket_day': day_part2,
                 'ticket_month': month_part,
                 'ticket_time': time_part2,
-                "is_purchase": False
+                "is_purchase": False,
+                "verification_code": '',
             }
         else:
             # Crear los datos de la sección
@@ -279,7 +271,8 @@ def add_ticket(source):
                 "section_name": section_names[i],
                 "num_tickets": num_ticket_value,
                 "is_purchase": False,
-                "is_accurate_search": is_accurate_search_value == "true"
+                "is_accurate_search": is_accurate_search_value == "true",
+                "verification_code": '',
             }
         tickets_data.append(section_data)
 
@@ -325,7 +318,8 @@ def edit_ticket(ticket_id):
                 "section_name": section_names[i],
                 "num_tickets": num_ticket_value,
                 "is_purchase": is_purchase_value == 'on',
-                "is_accurate_search": ticket.tickets_data[i].is_accurate_search
+                "is_accurate_search": ticket.tickets_data[i].is_accurate_search,
+                "verification_code": ''
             }
             sections_data.append(section_data)
 
@@ -348,5 +342,6 @@ def delete_ticket(ticket_id):
     return redirect(url_for('home'))
 
 if __name__ == "__main__":
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=8000)
+    app.run('localhost', 8000)
+    # from waitress import serve
+    # serve(app, host="0.0.0.0", port=8000)
