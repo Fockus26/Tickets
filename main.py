@@ -26,38 +26,47 @@ class GetTickets(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('api_key', type=str, required=True, location='args')
-        self.reqparse.add_argument('filter', type=str, required=False, location='args')
+        self.reqparse.add_argument('page', type=str, required=True, location='args')
+        self.reqparse.add_argument('id_event', type=int, required=False, location='args')
+        self.reqparse.add_argument('id_ticket', type=int, required=False, location='args')
 
     def get(self):
-        args = self.reqparse.parse_args()
+        args = self.reqparse.parse_args()        
         api_key = args['api_key']
-        filter_value = args['filter']
+        page = args['page'].lower()
+        event_id = args['id_event']
+        ticket_id = args['id_ticket']
 
         if api_key != os.getenv('API_KEY'):
             return {'message': 'Unauthorized access'}, 401
-
-        if filter_value:
-            tickets = Ticket.query.filter_by(page_name=filter_value).all()
+        
+        tickets = Ticket.query.filter_by(page_name=page).all()
+        if event_id and ticket_id:
+            for ticket in tickets:
+                if ticket.id == event_id:
+                    sections = json.loads(ticket.tickets_data)
+                    filtered_sections = [section for section in sections if not section.get("is_purchase", False)]
+                    for filtered_section in filtered_sections:
+                        if ticket_id == filtered_section.get('section_id'):
+                            return filtered_section
         else:
-            tickets = Ticket.query.all()
-
-        tickets_data = []
-        for ticket in tickets:
-            sections = json.loads(ticket.tickets_data)
-            filtered_sections = [section for section in sections if not section.get("is_purchase", False)]
-            if filtered_sections:
-                ticket_info = {
-                    'id': ticket.id,
-                    'page_name': ticket.page_name,
-                    'concert_name': ticket.concert_name,
-                    'event_name': ticket.event_name,
-                    'event_day': ticket.event_day,
-                    'event_month': ticket.event_month,
-                    'event_time': ticket.event_time,
-                    'tickets_data': filtered_sections
-                }
-                tickets_data.append(ticket_info)
-        return {'tickets': tickets_data}
+            tickets_data = []
+            for ticket in tickets:
+                sections = json.loads(ticket.tickets_data)
+                filtered_sections = [section for section in sections if not section.get("is_purchase", False)]
+                if filtered_sections:
+                    ticket_info = {
+                        'id': ticket.id,
+                        'page_name': ticket.page_name,
+                        'concert_name': ticket.concert_name,
+                        'event_name': ticket.event_name,
+                        'event_day': ticket.event_day,
+                        'event_month': ticket.event_month,
+                        'event_time': ticket.event_time,
+                        'tickets_data': filtered_sections
+                    }
+                    tickets_data.append(ticket_info)
+            return {'tickets': tickets_data}
 
 class GetBuyTickets(Resource):
     def __init__(self):
@@ -108,13 +117,10 @@ class UpdateTicket(Resource):
         tickets_data = json.loads(ticket.tickets_data)
         section_found = False
 
-        print('tickets', ticket.tickets_data)
-
         for section in tickets_data:
             if section.get('section_id') == event_id:
                 if verification_code:
                     section['verification_code'] = verification_code
-                section['is_purchase'] = True
                 section_found = True
                 break
 
@@ -199,7 +205,6 @@ def add_ticket(source):
 
     event_date_time = request.form.get('event_date_range')
     if "to" in event_date_time:
-        print("Hay to")
         date_time_parts = event_date_time.split(' to ')
         start_datetime = datetime.datetime.strptime(date_time_parts[0], '%Y-%m-%d %H:%M')
         end_datetime = datetime.datetime.strptime(date_time_parts[1], '%Y-%m-%d %H:%M')
@@ -209,7 +214,6 @@ def add_ticket(source):
         else:
             day_part = [start_datetime.day, end_datetime.day]
     else:
-        print("No hay to")
         start_datetime = datetime.datetime.strptime(event_date_time, '%Y-%m-%d %H:%M')
         day_part = [start_datetime.day]
 
