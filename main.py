@@ -68,31 +68,39 @@ class GetTickets(Resource):
                     tickets_data.append(ticket_info)
             return {'tickets': tickets_data}
 
-class GetBuyTickets(Resource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('api_key', type=str, required=True, location='args')
-        self.reqparse.add_argument('page', type=str, required=True, location='args')
-        self.reqparse.add_argument('id_event', type=int, required=True, location='args')
-        self.reqparse.add_argument('id_ticket', type=int, required=True, location='args')
+class BuyTicket(Resource):
+  def post(self):
+        # Obtener los parámetros de la URL
+        api_key = request.args.get('api_key')
+        ticket_id = request.args.get('id_ticket', type=int)
+        event_id = request.args.get('id_event', type=int)
 
-    def get(self):
-        args = self.reqparse.parse_args()
-        api_key = args['api_key']
-        filter_page = args['page'].lower()
-        event_id = args['id_event']
-        ticket_id = args['id_ticket']
-
+        # Verificar API Key
         if api_key != os.getenv('API_KEY'):
-            return {'message': 'Unauthorized access'}, 401
+            return jsonify({"message": "Unauthorized access"}), 401
 
-        tickets = Ticket.query.filter_by(page_name=filter_page).all()
+        # Buscar ticket en la base de datos
+        ticket = Ticket.query.get(ticket_id)
+        if not ticket:
+            return jsonify({"message": "Ticket not found"}), 404
+        
+                # Actualizar datos del ticket
+        tickets_data = json.loads(ticket.tickets_data)
+        section_found = False
 
-        for ticket in tickets:
-            if ticket.id == event_id:
-                for data in json.loads(ticket.tickets_data):
-                    if ticket_id == data.get('section_id'):
-                        return data
+        for section in tickets_data:
+            if section.get('section_id') == event_id:
+                section['is_purchase'] = True
+                section_found = True
+                break
+
+        if not section_found:
+            return jsonify({"message": "Section not found in ticket"}), 404
+
+        ticket.tickets_data = json.dumps(tickets_data)
+        db.session.commit()
+
+        return jsonify({"message": "Ticket updated successfully"})
 
 class UpdateTicket(Resource):
     def post(self):
@@ -133,7 +141,7 @@ class UpdateTicket(Resource):
         return jsonify({"message": "Ticket updated successfully"})
 
 api.add_resource(GetTickets, '/get_tickets')
-api.add_resource(GetBuyTickets, '/get_buy_tickets')
+api.add_resource(BuyTicket, '/buy_ticket')
 api.add_resource(UpdateTicket, '/update_ticket')
 
 # DATABASE
