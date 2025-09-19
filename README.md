@@ -127,13 +127,14 @@ Este proyecto fue creado como complemento frontend/API para BotTickets. Aunque n
 
 ---
 
-## 📜 License / Licencia
-
+## 📜 License / Licencia  
 
 **English**
 
-This project is licensed under the MIT License.
+This project is proprietary software. All rights reserved.  
+Unauthorized use, copying, modification, or distribution of this code is strictly prohibited without prior written permission.  
 
-**Español**
+**Español**  
 
-Este proyecto está licenciado bajo la Licencia MIT.
+Este proyecto es software propietario. Todos los derechos reservados.  
+El uso no autorizado, copia, modificación o distribución de este código está estrictamente prohibido sin permiso previo por escrito.  
